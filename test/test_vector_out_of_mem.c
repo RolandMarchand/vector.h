@@ -5,7 +5,7 @@ void *return_null(void *ignored1, size_t ignored2);
 #define VECTOR_REALLOC(p, s) (return_null((p), (s)))
 #define VECTOR_FREE(p) (free((p)))
 #define VECTOR_LONG_JUMP_NO_ABORT
-#include "../vector.c"
+#include "vector_generated.h"
 
 jmp_buf abort_jmp;
 
@@ -53,7 +53,7 @@ void test_init_out_of_mem(void)
 
 void test_duplicate_out_of_mem(void)
 {
-	lmao buffer[10] = {0};
+	int buffer[10] = {0};
 	Vector src = {0};
 	Vector dest = {0};
 

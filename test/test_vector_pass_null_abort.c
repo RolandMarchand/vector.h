@@ -1,6 +1,6 @@
 #include "unity/unity.h"
 #define VECTOR_LONG_JUMP_NO_ABORT
-#include "../vector.c"
+#include "vector_generated.h"
 
 jmp_buf abort_jmp;
 

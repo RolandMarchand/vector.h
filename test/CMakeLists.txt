@@ -1,7 +1,7 @@
 add_subdirectory(unity)
 
 function(add_vector_test test_name)
-  add_executable(${test_name} EXCLUDE_FROM_ALL ${test_name}.c)
+  add_executable(${test_name} EXCLUDE_FROM_ALL ${test_name}.c vector_generated.c)
   target_link_libraries(${test_name} PRIVATE unity)
 endfunction()
 

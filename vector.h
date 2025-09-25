@@ -1,0 +1,440 @@
+#ifndef VECTOR_H
+#define VECTOR_H
+
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+/* Library to generate type-safe vector types.
+ * 
+ * This library is portable (tested on GCC/Clang/MSVC/ICX, x86_64/ARM64, all
+ * warnings and pedantic) and is C89 compatible.
+ * 
+ * Vector is optimized for iteration, here is an example:
+ * for (int *i = v.begin; i != v.end; i++)
+ * 
+ * To configure this library, either #define the symbols before including
+ * the library.
+ * 
+ * Configuration options:
+ * 
+ * - VECTOR_NO_PANIC_ON_NULL (default 0): if true (1), does not panic
+ *   upon passing NULL to vector functions. Otherwise, panic.
+ * 
+ * - VECTOR_REALLOC (default realloc(3)): specify the allocator. If using
+ *   a custom allocator, must also specify VECTOR_FREE.
+ * 
+ * - VECTOR_FREE (default free(3)): specify the deallocator. If using a
+ *   custom deallocator, must also specify VECTOR_REALLOC.
+ * 
+ * - VECTOR_LONG_JUMP_NO_ABORT (default undefined): for testing only. Jump to
+ *   externally defined "jmp_buf abort_jmp" instead of panicking. Unlike other
+ *   configuration options, must be defined before including the library. */
+
+#if defined(VECTOR_REALLOC) && !defined(VECTOR_FREE) || \
+	!defined(VECTOR_REALLOC) && defined(VECTOR_FREE)
+#error "You must define both VECTOR_REALLOC and VECTOR_FREE, or neither."
+#endif
+#if !defined(VECTOR_REALLOC) && !defined(VECTOR_FREE)
+#define VECTOR_REALLOC(p, s) (realloc((p), (s)))
+#define VECTOR_FREE(p) (free((p)))
+#endif
+
+#ifndef VECTOR_NO_PANIC_ON_NULL
+#define VECTOR_NO_PANIC_ON_NULL 0
+#endif
+
+#ifdef VECTOR_LONG_JUMP_NO_ABORT
+#include <setjmp.h>
+extern jmp_buf abort_jmp;
+#endif
+
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
+#define VECTOR_NORETURN [[noreturn]]
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+#define VECTOR_NORETURN _Noreturn
+#elif defined(__GNUC__) || defined(__clang__)
+#define VECTOR_NORETURN __attribute__((noreturn))
+#else
+#define VECTOR_NORETURN
+#endif
+
+#ifndef __STDC_VERSION__
+#define VECTOR_INLINE
+#elif _MSC_VER
+#define VECTOR_INLINE __forceinline
+#elif defined(__GNUC__) || defined(__clang__)
+#define VECTOR_INLINE __attribute__((always_inline)) inline
+#else
+#define VECTOR_INLINE inline
+#endif
+
+#ifndef __STDC_VERSION__
+#define RESTRICT
+#else
+#define RESTRICT restrict
+#endif
+
+#define VECTOR_SIZE(vec) (size_t)((vec)->end - (vec)->begin)
+#define VECTOR_IS_SIZE_ZERO(vec) ((vec)->end == (vec)->begin)
+#define VECTOR_CAPACITY(vec) (size_t)((vec)->end_of_storage - (vec)->begin)
+
+enum { VECTOR_DEFAULT_CAPACITY = 8, VECTOR_GROWTH_FACTOR = 2 };
+
+
+#define VECTOR_DECLARE(Struct_Name_, Functions_Prefix_, Custom_Type_)\
+\
+typedef struct Struct_Name_ {\
+	Custom_Type_ *begin;\
+	Custom_Type_ *end;\
+	Custom_Type_ *end_of_storage;\
+} Struct_Name_;\
+\
+VECTOR_NORETURN void Functions_Prefix_##_panic(const char *message);\
+void Functions_Prefix_##_assert(const Struct_Name_ *vec);\
+/* Desired is in element count */\
+void Functions_Prefix_##_grow(Struct_Name_ *vec, size_t desired);\
+void Functions_Prefix_##_free(Struct_Name_ *vec);\
+/* Capacity is in element count */\
+void Functions_Prefix_##_init(Struct_Name_ *vec, size_t capacity);\
+void Functions_Prefix_##_push(Struct_Name_ *vec, Custom_Type_ value);\
+Custom_Type_ Functions_Prefix_##_pop(Struct_Name_ *vec);\
+Custom_Type_ Functions_Prefix_##_get(const Struct_Name_ *vec, size_t idx);\
+void Functions_Prefix_##_set(Struct_Name_ *vec, size_t idx, Custom_Type_ value);\
+void Functions_Prefix_##_insert(Struct_Name_ *vec, size_t idx, Custom_Type_ value);\
+void Functions_Prefix_##_delete(Struct_Name_ *vec, size_t idx);\
+void Functions_Prefix_##_duplicate(Struct_Name_ *RESTRICT dest, const Struct_Name_ *RESTRICT src);\
+void Functions_Prefix_##_clear(Struct_Name_ *vec);\
+
+#ifdef VECTOR_LONG_JUMP_NO_ABORT
+#define VECTOR_DEFINE_PANIC(Function_Prefix_)                              \
+	VECTOR_NORETURN void Function_Prefix_##_panic(const char *message) \
+	{                                                                  \
+		assert(message);                                           \
+		longjmp(abort_jmp, 1);                                     \
+	}
+#else
+#define VECTOR_DEFINE_PANIC(Function_Prefix_)                              \
+	VECTOR_NORETURN void Function_Prefix_##_panic(const char *message) \
+	{                                                                  \
+		assert(message);                                           \
+		(void)fprintf(stderr, "%s\n", message);                    \
+		abort();                                                   \
+	}
+#endif
+
+#define VECTOR_DEFINE(Struct_Name_, Functions_Prefix_, Custom_Type_)\
+VECTOR_DEFINE_PANIC(Functions_Prefix_)\
+\
+VECTOR_INLINE void Functions_Prefix_##_assert(const Struct_Name_ *vec)\
+{\
+	if (vec->begin == NULL) {\
+		assert(vec->end == NULL && vec->end_of_storage == NULL);\
+		return;\
+	}\
+\
+	assert(vec->end && vec->end_of_storage);\
+	assert(vec->begin <= vec->end && vec->end <= vec->end_of_storage);\
+}\
+\
+void Functions_Prefix_##_grow(Struct_Name_ *vec, size_t desired)\
+{\
+	size_t old_size = 0;\
+	Custom_Type_ *new_begin = NULL;\
+\
+	if (vec == NULL) {\
+		if (VECTOR_NO_PANIC_ON_NULL) {\
+			return;\
+		}\
+		Functions_Prefix_##_panic(\
+			"Null passed to Functions_Prefix_##_grow but non-null argument expected.");\
+	}\
+	Functions_Prefix_##_assert(vec);\
+\
+	if (vec->begin) {\
+		if (VECTOR_CAPACITY(vec) == desired) {\
+			return;\
+		}\
+		if (VECTOR_CAPACITY(vec) > desired) {\
+			Functions_Prefix_##_panic("Struct_Name_ shrinking not supported.");\
+		}\
+	}\
+\
+	old_size = VECTOR_SIZE(vec);\
+\
+	new_begin = VECTOR_REALLOC(vec->begin, desired * sizeof(Custom_Type_));\
+	if (new_begin == NULL) {\
+		Functions_Prefix_##_panic("Out of memory. Panic.");\
+	}\
+\
+	vec->begin = new_begin;\
+	vec->end = new_begin + old_size;\
+	vec->end_of_storage = new_begin + desired;\
+}\
+\
+void Functions_Prefix_##_free(Struct_Name_ *vec)\
+{\
+	if (vec == NULL) {\
+		if (VECTOR_NO_PANIC_ON_NULL) {\
+			return;\
+		}\
+		Functions_Prefix_##_panic(\
+			"Null passed to Functions_Prefix_##_free but non-null argument expected.");\
+	}\
+\
+	Functions_Prefix_##_assert(vec);\
+\
+	VECTOR_FREE(vec->begin);\
+	vec->begin = NULL;\
+	vec->end = NULL;\
+	vec->end_of_storage = NULL;\
+}\
+\
+void Functions_Prefix_##_init(Struct_Name_ *vec, size_t capacity)\
+{\
+	if (vec == NULL) {\
+		if (VECTOR_NO_PANIC_ON_NULL) {\
+			return;\
+		}\
+		Functions_Prefix_##_panic(\
+			"Null passed to Functions_Prefix_##_init but non-null argument expected.");\
+	}\
+\
+	if (vec->begin || vec->end || vec->end_of_storage) {\
+		Functions_Prefix_##_panic(\
+			"Uninitialized garbage memory, cannot initialize.");\
+	}\
+\
+	if (capacity == 0) {\
+		return;\
+	}\
+\
+	vec->begin = VECTOR_REALLOC(NULL, capacity * sizeof(Custom_Type_));\
+	if (vec->begin == NULL) {\
+		Functions_Prefix_##_panic("Out of memory. Panic.");\
+	}\
+\
+	vec->end = vec->begin;\
+	vec->end_of_storage = vec->begin + capacity;\
+\
+	Functions_Prefix_##_assert(vec);\
+}\
+\
+void Functions_Prefix_##_push(Struct_Name_ *vec, Custom_Type_ value)\
+{\
+	if (vec == NULL) {\
+		if (VECTOR_NO_PANIC_ON_NULL) {\
+			return;\
+		}\
+		Functions_Prefix_##_panic(\
+			"Null passed to Functions_Prefix_##_push but non-null argument expected.");\
+	}\
+\
+	Functions_Prefix_##_assert(vec);\
+\
+	if (vec->begin == NULL) {\
+		Functions_Prefix_##_init(vec, VECTOR_DEFAULT_CAPACITY);\
+	}\
+\
+	if (VECTOR_SIZE(vec) >= VECTOR_CAPACITY(vec)) {\
+		Functions_Prefix_##_grow(vec, VECTOR_CAPACITY(vec) * VECTOR_GROWTH_FACTOR);\
+	}\
+\
+	vec->end[0] = value;\
+	vec->end++;\
+}\
+\
+Custom_Type_ Functions_Prefix_##_pop(Struct_Name_ *vec)\
+{\
+	Custom_Type_ nothing = { 0 };\
+	Custom_Type_ ret = { 0 };\
+\
+	if (vec == NULL) {\
+		if (VECTOR_NO_PANIC_ON_NULL) {\
+			return nothing;\
+		}\
+		Functions_Prefix_##_panic(\
+			"Null passed to Functions_Prefix_##_pop but non-null argument expected.");\
+	}\
+	Functions_Prefix_##_assert(vec);\
+\
+	if (VECTOR_IS_SIZE_ZERO(vec)) {\
+		Functions_Prefix_##_panic("Cannot pop from empty Functions_Prefix_##.");\
+	}\
+\
+	ret = vec->end[-1];\
+	vec->end--;\
+\
+	return ret;\
+}\
+\
+Custom_Type_ Functions_Prefix_##_get(const Struct_Name_ *vec, size_t idx)\
+{\
+	Custom_Type_ nothing = { 0 };\
+\
+	if (vec == NULL) {\
+		if (VECTOR_NO_PANIC_ON_NULL) {\
+			return nothing;\
+		}\
+		Functions_Prefix_##_panic(\
+			"Null passed to Functions_Prefix_##_get but non-null argument expected.");\
+	}\
+	Functions_Prefix_##_assert(vec);\
+\
+	if (idx >= VECTOR_SIZE(vec)) {\
+		Functions_Prefix_##_panic("Out of range.");\
+	}\
+\
+	return vec->begin[idx];\
+}\
+\
+void Functions_Prefix_##_set(Struct_Name_ *vec, size_t idx, Custom_Type_ value)\
+{\
+	if (vec == NULL) {\
+		if (VECTOR_NO_PANIC_ON_NULL) {\
+			return;\
+		}\
+		Functions_Prefix_##_panic(\
+			"Null passed to Functions_Prefix_##_set but non-null argument expected.");\
+	}\
+	Functions_Prefix_##_assert(vec);\
+\
+	if (idx >= VECTOR_SIZE(vec)) {\
+		Functions_Prefix_##_panic("Out of range.");\
+	}\
+\
+	vec->begin[idx] = value;\
+}\
+\
+void Functions_Prefix_##_insert(Struct_Name_ *vec, size_t idx, Custom_Type_ value)\
+{\
+	Custom_Type_ *middle = NULL;\
+	size_t delete_size = 0;\
+	size_t capacity = 0;\
+\
+	if (vec == NULL) {\
+		if (VECTOR_NO_PANIC_ON_NULL) {\
+			return;\
+		}\
+		Functions_Prefix_##_panic(\
+			"Null passed to Functions_Prefix_##_insert but non-null argument expected.");\
+	}\
+	Functions_Prefix_##_assert(vec);\
+\
+	if (idx > VECTOR_SIZE(vec)) {\
+		Functions_Prefix_##_panic("Out of range.");\
+	}\
+\
+	capacity = VECTOR_CAPACITY(vec);\
+	if (VECTOR_SIZE(vec) >= capacity) {\
+		/* Set a minimum multiplicand of 1 */\
+		Functions_Prefix_##_grow(vec, (capacity | (capacity == 0)) *\
+					 VECTOR_GROWTH_FACTOR);\
+	}\
+\
+	if (vec->begin + idx == vec->end) {\
+		vec->end[0] = value;\
+		vec->end++;\
+		return;\
+	}\
+\
+	middle = vec->begin + idx;\
+	delete_size = (vec->end - middle) * sizeof(Custom_Type_);\
+	memmove(middle + 1, middle, delete_size);\
+	vec->end++;\
+	middle[0] = value;\
+}\
+\
+void Functions_Prefix_##_delete(Struct_Name_ *vec, size_t idx)\
+{\
+	Custom_Type_ *middle = NULL;\
+	size_t delete_size = 0;\
+\
+	if (vec == NULL) {\
+		if (VECTOR_NO_PANIC_ON_NULL) {\
+			return;\
+		}\
+		Functions_Prefix_##_panic(\
+			"Null passed to Functions_Prefix_##_delete but non-null argument expected.");\
+	}\
+	Functions_Prefix_##_assert(vec);\
+\
+	if (idx >= VECTOR_SIZE(vec)) {\
+		Functions_Prefix_##_panic("Out of range.");\
+	}\
+\
+	/* Delete last element */\
+	if (idx == VECTOR_SIZE(vec) - 1) {\
+		vec->end--;\
+		return;\
+	}\
+\
+	middle = vec->begin + idx;\
+	delete_size = (vec->end - middle - 1) * sizeof(Custom_Type_);\
+	memmove(middle, middle + 1, delete_size);\
+	vec->end--;\
+}\
+\
+void Functions_Prefix_##_duplicate(Struct_Name_ *RESTRICT dest, const Struct_Name_ *RESTRICT src)\
+{\
+	if (dest == NULL || src == NULL) {\
+		if (VECTOR_NO_PANIC_ON_NULL) {\
+			return;\
+		}\
+		Functions_Prefix_##_panic(\
+			"Null passed to Functions_Prefix_##_duplicate but non-null argument expected.");\
+	}\
+	Functions_Prefix_##_assert(src);\
+\
+	if (VECTOR_CAPACITY(src) == 0) {\
+		dest->begin = NULL;\
+		dest->end = NULL;\
+		dest->end_of_storage = NULL;\
+		return;\
+	}\
+\
+	dest->begin =\
+		VECTOR_REALLOC(NULL, VECTOR_CAPACITY(src) * sizeof(Custom_Type_));\
+	if (dest->begin == NULL) {\
+		Functions_Prefix_##_panic("Out of memory.");\
+	}\
+\
+	dest->end = dest->begin + VECTOR_SIZE(src);\
+	dest->end_of_storage = dest->begin + VECTOR_CAPACITY(src);\
+\
+	memcpy(dest->begin, src->begin, VECTOR_SIZE(src) * sizeof(Custom_Type_));\
+\
+	Functions_Prefix_##_assert(dest);\
+}\
+\
+void Functions_Prefix_##_clear(Struct_Name_ *vec)\
+{\
+	if (vec == NULL) {\
+		if (VECTOR_NO_PANIC_ON_NULL) {\
+			return;\
+		}\
+		Functions_Prefix_##_panic(\
+			"Null passed to Functions_Prefix_##_clear but non-null argument expected.");\
+	}\
+	Functions_Prefix_##_assert(vec);\
+\
+	vec->end = vec->begin;\
+}\
+
+/****************************************************************************
+ * Copyright (C) 2025 by Roland Marchand <roland.marchand@protonmail.com>   *
+ *                                                                          *
+ * Permission to use, copy, modify, and/or distribute this software for any *
+ * purpose with or without fee is hereby granted.                           *
+ *                                                                          *
+ * THE SOFTWARE IS PROVIDED “AS IS” AND THE AUTHOR DISCLAIMS ALL WARRANTIES *
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF         *
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR  *
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES   *
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN    *
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF  *
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.           *
+ ****************************************************************************/
+
+#endif /* VECTOR_H */

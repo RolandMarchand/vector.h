@@ -50,10 +50,6 @@
 extern jmp_buf abort_jmp;
 #endif
 
-#if defined(__GNUC__) || defined(__clang__)
-#define VECTOR_AUTO __attribute__((cleanup(vector_free)))
-#endif
-
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
 #define VECTOR_NORETURN [[noreturn]]
 #elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
@@ -84,10 +80,17 @@ extern jmp_buf abort_jmp;
 #define VECTOR_IS_SIZE_ZERO(vec) ((vec)->end == (vec)->begin)
 #define VECTOR_CAPACITY(vec) (size_t)((vec)->end_of_storage - (vec)->begin)
 
-typedef int Vector_Custom_Type_;
+enum { VECTOR_DEFAULT_CAPACITY = 8, VECTOR_GROWTH_FACTOR = 2 };
 
-struct Vector;
-typedef struct Vector Vector;
+typedef int SampleType;
+
+/* Declarations start here */
+
+typedef struct Vector {
+	SampleType *begin;
+	SampleType *end;
+	SampleType *end_of_storage;
+} Vector;
 
 VECTOR_NORETURN void vector_panic(const char *message);
 void vector_assert(const Vector *vec);
@@ -96,50 +99,51 @@ void vector_grow(Vector *vec, size_t desired);
 void vector_free(Vector *vec);
 /* Capacity is in element count */
 void vector_init(Vector *vec, size_t capacity);
-void vector_push(Vector *vec, Vector_Custom_Type_ value);
-Vector_Custom_Type_ vector_pop(Vector *vec);
-Vector_Custom_Type_ vector_get(const Vector *vec, size_t idx);
-void vector_set(Vector *vec, size_t idx, Vector_Custom_Type_ value);
-void vector_insert(Vector *vec, size_t idx, Vector_Custom_Type_ value);
+void vector_push(Vector *vec, SampleType value);
+SampleType vector_pop(Vector *vec);
+SampleType vector_get(const Vector *vec, size_t idx);
+void vector_set(Vector *vec, size_t idx, SampleType value);
+void vector_insert(Vector *vec, size_t idx, SampleType value);
 void vector_delete(Vector *vec, size_t idx);
 void vector_duplicate(Vector *RESTRICT dest, const Vector *RESTRICT src);
 void vector_clear(Vector *vec);
+/* Declarations stop here */
 
-struct Vector {
-	Vector_Custom_Type_ *begin;
-	Vector_Custom_Type_ *end;
-	Vector_Custom_Type_ *end_of_storage;
-};
-
-enum { VECTOR_DEFAULT_CAPACITY = 8, VECTOR_GROWTH_FACTOR = 2 };
-
-VECTOR_NORETURN void vector_panic(const char *message)
-{
-	assert(message);
 #ifdef VECTOR_LONG_JUMP_NO_ABORT
-	longjmp(abort_jmp, 1);
+#define VECTOR_DEFINE_PANIC(Function_Prefix_)                              \
+	VECTOR_NORETURN void Function_Prefix_##_panic(const char *message) \
+	{                                                                  \
+		assert(message);                                           \
+		longjmp(abort_jmp, 1);                                     \
+	}
+#else
+#define VECTOR_DEFINE_PANIC(Function_Prefix_)                              \
+	VECTOR_NORETURN void Function_Prefix_##_panic(const char *message) \
+	{                                                                  \
+		assert(message);                                           \
+		(void)fprintf(stderr, "%s\n", message);                    \
+		abort();                                                   \
+	}
 #endif
-	(void)fprintf(stderr, "%s\n", message);
-	abort();
-}
+
+/* Definitions start here */
+VECTOR_DEFINE_PANIC(vector)
 
 VECTOR_INLINE void vector_assert(const Vector *vec)
 {
 	if (vec->begin == NULL) {
-		assert(vec->end == NULL);
-		assert(vec->end_of_storage == NULL);
-	} else {
-		assert(vec->end);
-		assert(vec->end_of_storage);
-		assert(vec->begin <= vec->end);
-		assert(vec->end <= vec->end_of_storage);
+		assert(vec->end == NULL && vec->end_of_storage == NULL);
+		return;
 	}
+
+	assert(vec->end && vec->end_of_storage);
+	assert(vec->begin <= vec->end && vec->end <= vec->end_of_storage);
 }
 
 void vector_grow(Vector *vec, size_t desired)
 {
 	size_t old_size = 0;
-	Vector_Custom_Type_ *new_begin = NULL;
+	SampleType *new_begin = NULL;
 
 	if (vec == NULL) {
 		if (VECTOR_NO_PANIC_ON_NULL) {
@@ -161,7 +165,7 @@ void vector_grow(Vector *vec, size_t desired)
 
 	old_size = VECTOR_SIZE(vec);
 
-	new_begin = VECTOR_REALLOC(vec->begin, desired * sizeof(Vector_Custom_Type_));
+	new_begin = VECTOR_REALLOC(vec->begin, desired * sizeof(SampleType));
 	if (new_begin == NULL) {
 		vector_panic("Out of memory. Panic.");
 	}
@@ -208,7 +212,7 @@ void vector_init(Vector *vec, size_t capacity)
 		return;
 	}
 
-	vec->begin = VECTOR_REALLOC(NULL, capacity * sizeof(Vector_Custom_Type_));
+	vec->begin = VECTOR_REALLOC(NULL, capacity * sizeof(SampleType));
 	if (vec->begin == NULL) {
 		vector_panic("Out of memory. Panic.");
 	}
@@ -219,7 +223,7 @@ void vector_init(Vector *vec, size_t capacity)
 	vector_assert(vec);
 }
 
-void vector_push(Vector *vec, Vector_Custom_Type_ value)
+void vector_push(Vector *vec, SampleType value)
 {
 	if (vec == NULL) {
 		if (VECTOR_NO_PANIC_ON_NULL) {
@@ -243,10 +247,10 @@ void vector_push(Vector *vec, Vector_Custom_Type_ value)
 	vec->end++;
 }
 
-Vector_Custom_Type_ vector_pop(Vector *vec)
+SampleType vector_pop(Vector *vec)
 {
-	Vector_Custom_Type_ nothing = { 0 };
-	Vector_Custom_Type_ ret = { 0 };
+	SampleType nothing = { 0 };
+	SampleType ret = { 0 };
 
 	if (vec == NULL) {
 		if (VECTOR_NO_PANIC_ON_NULL) {
@@ -267,9 +271,9 @@ Vector_Custom_Type_ vector_pop(Vector *vec)
 	return ret;
 }
 
-Vector_Custom_Type_ vector_get(const Vector *vec, size_t idx)
+SampleType vector_get(const Vector *vec, size_t idx)
 {
-	Vector_Custom_Type_ nothing = { 0 };
+	SampleType nothing = { 0 };
 
 	if (vec == NULL) {
 		if (VECTOR_NO_PANIC_ON_NULL) {
@@ -287,7 +291,7 @@ Vector_Custom_Type_ vector_get(const Vector *vec, size_t idx)
 	return vec->begin[idx];
 }
 
-void vector_set(Vector *vec, size_t idx, Vector_Custom_Type_ value)
+void vector_set(Vector *vec, size_t idx, SampleType value)
 {
 	if (vec == NULL) {
 		if (VECTOR_NO_PANIC_ON_NULL) {
@@ -305,9 +309,9 @@ void vector_set(Vector *vec, size_t idx, Vector_Custom_Type_ value)
 	vec->begin[idx] = value;
 }
 
-void vector_insert(Vector *vec, size_t idx, Vector_Custom_Type_ value)
+void vector_insert(Vector *vec, size_t idx, SampleType value)
 {
-	Vector_Custom_Type_ *middle = NULL;
+	SampleType *middle = NULL;
 	size_t delete_size = 0;
 	size_t capacity = 0;
 
@@ -327,8 +331,8 @@ void vector_insert(Vector *vec, size_t idx, Vector_Custom_Type_ value)
 	capacity = VECTOR_CAPACITY(vec);
 	if (VECTOR_SIZE(vec) >= capacity) {
 		/* Set a minimum multiplicand of 1 */
-		vector_grow(vec, (capacity | (capacity == 0))
-			    * VECTOR_GROWTH_FACTOR);
+		vector_grow(vec, (capacity | (capacity == 0)) *
+					 VECTOR_GROWTH_FACTOR);
 	}
 
 	if (vec->begin + idx == vec->end) {
@@ -338,7 +342,7 @@ void vector_insert(Vector *vec, size_t idx, Vector_Custom_Type_ value)
 	}
 
 	middle = vec->begin + idx;
-	delete_size = (vec->end - middle) * sizeof(Vector_Custom_Type_);
+	delete_size = (vec->end - middle) * sizeof(SampleType);
 	memmove(middle + 1, middle, delete_size);
 	vec->end++;
 	middle[0] = value;
@@ -346,7 +350,7 @@ void vector_insert(Vector *vec, size_t idx, Vector_Custom_Type_ value)
 
 void vector_delete(Vector *vec, size_t idx)
 {
-	Vector_Custom_Type_ *middle = NULL;
+	SampleType *middle = NULL;
 	size_t delete_size = 0;
 
 	if (vec == NULL) {
@@ -369,7 +373,7 @@ void vector_delete(Vector *vec, size_t idx)
 	}
 
 	middle = vec->begin + idx;
-	delete_size = (vec->end - middle - 1) * sizeof(Vector_Custom_Type_);
+	delete_size = (vec->end - middle - 1) * sizeof(SampleType);
 	memmove(middle, middle + 1, delete_size);
 	vec->end--;
 }
@@ -392,7 +396,8 @@ void vector_duplicate(Vector *RESTRICT dest, const Vector *RESTRICT src)
 		return;
 	}
 
-	dest->begin = VECTOR_REALLOC(NULL, VECTOR_CAPACITY(src) * sizeof(Vector_Custom_Type_));
+	dest->begin =
+		VECTOR_REALLOC(NULL, VECTOR_CAPACITY(src) * sizeof(SampleType));
 	if (dest->begin == NULL) {
 		vector_panic("Out of memory.");
 	}
@@ -400,7 +405,7 @@ void vector_duplicate(Vector *RESTRICT dest, const Vector *RESTRICT src)
 	dest->end = dest->begin + VECTOR_SIZE(src);
 	dest->end_of_storage = dest->begin + VECTOR_CAPACITY(src);
 
-	memcpy(dest->begin, src->begin, VECTOR_SIZE(src) * sizeof(Vector_Custom_Type_));
+	memcpy(dest->begin, src->begin, VECTOR_SIZE(src) * sizeof(SampleType));
 
 	vector_assert(dest);
 }
@@ -418,20 +423,21 @@ void vector_clear(Vector *vec)
 
 	vec->end = vec->begin;
 }
+/* Definitions stop here */
 
 /****************************************************************************
  * Copyright (C) 2025 by Roland Marchand <roland.marchand@protonmail.com>   *
- * 									    *
+ *                                                                          *
  * Permission to use, copy, modify, and/or distribute this software for any *
- * purpose with or without fee is hereby granted.			    *
- * 									    *
+ * purpose with or without fee is hereby granted.                           *
+ *                                                                          *
  * THE SOFTWARE IS PROVIDED “AS IS” AND THE AUTHOR DISCLAIMS ALL WARRANTIES *
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF	    *
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF         *
  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR  *
  * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES   *
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN    *
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF  *
- * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.	    *
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.           *
  ****************************************************************************/
 
 #endif /* VECTOR_H */

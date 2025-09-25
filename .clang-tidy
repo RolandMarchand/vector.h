@@ -1,4 +1,4 @@
-Checks: '-*,readability-*,performance-*,modernize-*,bugprone-*,clang-analyzer-*,-bugprone-easily-swappable-parameters,-readability-magic-numbers'
+Checks: '-*,readability-*,performance-*,modernize-*,bugprone-*,clang-analyzer-*,-bugprone-easily-swappable-parameters,-readability-magic-numbers,-bugprone-macro-parentheses'
 CheckOptions:
   - key:             readability-identifier-naming.ClassCase
     value:           CamelCase
