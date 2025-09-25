@@ -1,0 +1,3 @@
+add_executable(test_vector_out_of_mem EXCLUDE_FROM_ALL test_vector_out_of_mem.c vector_generated.c)
+target_link_libraries(test_vector_out_of_mem PRIVATE unity)
+add_test(NAME VectorOutOfMemory COMMAND test_vector_out_of_mem)

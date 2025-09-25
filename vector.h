@@ -82,7 +82,6 @@ extern jmp_buf abort_jmp;
 
 enum { VECTOR_DEFAULT_CAPACITY = 8, VECTOR_GROWTH_FACTOR = 2 };
 
-
 #define VECTOR_DECLARE(Struct_Name_, Functions_Prefix_, Custom_Type_)\
 \
 typedef struct Struct_Name_ {\
@@ -125,9 +124,10 @@ void Functions_Prefix_##_clear(Struct_Name_ *vec);\
 #endif
 
 #define VECTOR_DEFINE(Struct_Name_, Functions_Prefix_, Custom_Type_)\
+struct Struct_Name_;\
 VECTOR_DEFINE_PANIC(Functions_Prefix_)\
 \
-VECTOR_INLINE void Functions_Prefix_##_assert(const Struct_Name_ *vec)\
+VECTOR_INLINE void Functions_Prefix_##_assert(const struct Struct_Name_ *vec)\
 {\
 	if (vec->begin == NULL) {\
 		assert(vec->end == NULL && vec->end_of_storage == NULL);\
@@ -138,7 +138,7 @@ VECTOR_INLINE void Functions_Prefix_##_assert(const Struct_Name_ *vec)\
 	assert(vec->begin <= vec->end && vec->end <= vec->end_of_storage);\
 }\
 \
-void Functions_Prefix_##_grow(Struct_Name_ *vec, size_t desired)\
+void Functions_Prefix_##_grow(struct Struct_Name_ *vec, size_t desired)\
 {\
 	size_t old_size = 0;\
 	Custom_Type_ *new_begin = NULL;\
@@ -173,7 +173,7 @@ void Functions_Prefix_##_grow(Struct_Name_ *vec, size_t desired)\
 	vec->end_of_storage = new_begin + desired;\
 }\
 \
-void Functions_Prefix_##_free(Struct_Name_ *vec)\
+void Functions_Prefix_##_free(struct Struct_Name_ *vec)\
 {\
 	if (vec == NULL) {\
 		if (VECTOR_NO_PANIC_ON_NULL) {\
@@ -191,7 +191,7 @@ void Functions_Prefix_##_free(Struct_Name_ *vec)\
 	vec->end_of_storage = NULL;\
 }\
 \
-void Functions_Prefix_##_init(Struct_Name_ *vec, size_t capacity)\
+void Functions_Prefix_##_init(struct Struct_Name_ *vec, size_t capacity)\
 {\
 	if (vec == NULL) {\
 		if (VECTOR_NO_PANIC_ON_NULL) {\
@@ -221,7 +221,7 @@ void Functions_Prefix_##_init(Struct_Name_ *vec, size_t capacity)\
 	Functions_Prefix_##_assert(vec);\
 }\
 \
-void Functions_Prefix_##_push(Struct_Name_ *vec, Custom_Type_ value)\
+void Functions_Prefix_##_push(struct Struct_Name_ *vec, Custom_Type_ value)\
 {\
 	if (vec == NULL) {\
 		if (VECTOR_NO_PANIC_ON_NULL) {\
@@ -245,7 +245,7 @@ void Functions_Prefix_##_push(Struct_Name_ *vec, Custom_Type_ value)\
 	vec->end++;\
 }\
 \
-Custom_Type_ Functions_Prefix_##_pop(Struct_Name_ *vec)\
+Custom_Type_ Functions_Prefix_##_pop(struct Struct_Name_ *vec)\
 {\
 	Custom_Type_ nothing = { 0 };\
 	Custom_Type_ ret = { 0 };\
@@ -269,7 +269,7 @@ Custom_Type_ Functions_Prefix_##_pop(Struct_Name_ *vec)\
 	return ret;\
 }\
 \
-Custom_Type_ Functions_Prefix_##_get(const Struct_Name_ *vec, size_t idx)\
+Custom_Type_ Functions_Prefix_##_get(const struct Struct_Name_ *vec, size_t idx)\
 {\
 	Custom_Type_ nothing = { 0 };\
 \
@@ -289,7 +289,7 @@ Custom_Type_ Functions_Prefix_##_get(const Struct_Name_ *vec, size_t idx)\
 	return vec->begin[idx];\
 }\
 \
-void Functions_Prefix_##_set(Struct_Name_ *vec, size_t idx, Custom_Type_ value)\
+void Functions_Prefix_##_set(struct Struct_Name_ *vec, size_t idx, Custom_Type_ value)\
 {\
 	if (vec == NULL) {\
 		if (VECTOR_NO_PANIC_ON_NULL) {\
@@ -307,7 +307,7 @@ void Functions_Prefix_##_set(Struct_Name_ *vec, size_t idx, Custom_Type_ value)\
 	vec->begin[idx] = value;\
 }\
 \
-void Functions_Prefix_##_insert(Struct_Name_ *vec, size_t idx, Custom_Type_ value)\
+void Functions_Prefix_##_insert(struct Struct_Name_ *vec, size_t idx, Custom_Type_ value)\
 {\
 	Custom_Type_ *middle = NULL;\
 	size_t delete_size = 0;\
@@ -346,7 +346,7 @@ void Functions_Prefix_##_insert(Struct_Name_ *vec, size_t idx, Custom_Type_ valu
 	middle[0] = value;\
 }\
 \
-void Functions_Prefix_##_delete(Struct_Name_ *vec, size_t idx)\
+void Functions_Prefix_##_delete(struct Struct_Name_ *vec, size_t idx)\
 {\
 	Custom_Type_ *middle = NULL;\
 	size_t delete_size = 0;\
@@ -376,7 +376,7 @@ void Functions_Prefix_##_delete(Struct_Name_ *vec, size_t idx)\
 	vec->end--;\
 }\
 \
-void Functions_Prefix_##_duplicate(Struct_Name_ *RESTRICT dest, const Struct_Name_ *RESTRICT src)\
+void Functions_Prefix_##_duplicate(struct Struct_Name_ *RESTRICT dest, const struct Struct_Name_ *RESTRICT src)\
 {\
 	if (dest == NULL || src == NULL) {\
 		if (VECTOR_NO_PANIC_ON_NULL) {\
@@ -408,7 +408,7 @@ void Functions_Prefix_##_duplicate(Struct_Name_ *RESTRICT dest, const Struct_Nam
 	Functions_Prefix_##_assert(dest);\
 }\
 \
-void Functions_Prefix_##_clear(Struct_Name_ *vec)\
+void Functions_Prefix_##_clear(struct Struct_Name_ *vec)\
 {\
 	if (vec == NULL) {\
 		if (VECTOR_NO_PANIC_ON_NULL) {\

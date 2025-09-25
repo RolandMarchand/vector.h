@@ -81,7 +81,6 @@ extern jmp_buf abort_jmp;
 #define VECTOR_CAPACITY(vec) (size_t)((vec)->end_of_storage - (vec)->begin)
 
 enum { VECTOR_DEFAULT_CAPACITY = 8, VECTOR_GROWTH_FACTOR = 2 };
-
 typedef int SampleType;
 
 /* Declarations start here */
@@ -127,9 +126,10 @@ void vector_clear(Vector *vec);
 #endif
 
 /* Definitions start here */
+struct Vector;
 VECTOR_DEFINE_PANIC(vector)
 
-VECTOR_INLINE void vector_assert(const Vector *vec)
+VECTOR_INLINE void vector_assert(const struct Vector *vec)
 {
 	if (vec->begin == NULL) {
 		assert(vec->end == NULL && vec->end_of_storage == NULL);
@@ -140,7 +140,7 @@ VECTOR_INLINE void vector_assert(const Vector *vec)
 	assert(vec->begin <= vec->end && vec->end <= vec->end_of_storage);
 }
 
-void vector_grow(Vector *vec, size_t desired)
+void vector_grow(struct Vector *vec, size_t desired)
 {
 	size_t old_size = 0;
 	SampleType *new_begin = NULL;
@@ -175,7 +175,7 @@ void vector_grow(Vector *vec, size_t desired)
 	vec->end_of_storage = new_begin + desired;
 }
 
-void vector_free(Vector *vec)
+void vector_free(struct Vector *vec)
 {
 	if (vec == NULL) {
 		if (VECTOR_NO_PANIC_ON_NULL) {
@@ -193,7 +193,7 @@ void vector_free(Vector *vec)
 	vec->end_of_storage = NULL;
 }
 
-void vector_init(Vector *vec, size_t capacity)
+void vector_init(struct Vector *vec, size_t capacity)
 {
 	if (vec == NULL) {
 		if (VECTOR_NO_PANIC_ON_NULL) {
@@ -223,7 +223,7 @@ void vector_init(Vector *vec, size_t capacity)
 	vector_assert(vec);
 }
 
-void vector_push(Vector *vec, SampleType value)
+void vector_push(struct Vector *vec, SampleType value)
 {
 	if (vec == NULL) {
 		if (VECTOR_NO_PANIC_ON_NULL) {
@@ -247,7 +247,7 @@ void vector_push(Vector *vec, SampleType value)
 	vec->end++;
 }
 
-SampleType vector_pop(Vector *vec)
+SampleType vector_pop(struct Vector *vec)
 {
 	SampleType nothing = { 0 };
 	SampleType ret = { 0 };
@@ -271,7 +271,7 @@ SampleType vector_pop(Vector *vec)
 	return ret;
 }
 
-SampleType vector_get(const Vector *vec, size_t idx)
+SampleType vector_get(const struct Vector *vec, size_t idx)
 {
 	SampleType nothing = { 0 };
 
@@ -291,7 +291,7 @@ SampleType vector_get(const Vector *vec, size_t idx)
 	return vec->begin[idx];
 }
 
-void vector_set(Vector *vec, size_t idx, SampleType value)
+void vector_set(struct Vector *vec, size_t idx, SampleType value)
 {
 	if (vec == NULL) {
 		if (VECTOR_NO_PANIC_ON_NULL) {
@@ -309,7 +309,7 @@ void vector_set(Vector *vec, size_t idx, SampleType value)
 	vec->begin[idx] = value;
 }
 
-void vector_insert(Vector *vec, size_t idx, SampleType value)
+void vector_insert(struct Vector *vec, size_t idx, SampleType value)
 {
 	SampleType *middle = NULL;
 	size_t delete_size = 0;
@@ -348,7 +348,7 @@ void vector_insert(Vector *vec, size_t idx, SampleType value)
 	middle[0] = value;
 }
 
-void vector_delete(Vector *vec, size_t idx)
+void vector_delete(struct Vector *vec, size_t idx)
 {
 	SampleType *middle = NULL;
 	size_t delete_size = 0;
@@ -378,7 +378,7 @@ void vector_delete(Vector *vec, size_t idx)
 	vec->end--;
 }
 
-void vector_duplicate(Vector *RESTRICT dest, const Vector *RESTRICT src)
+void vector_duplicate(struct Vector *RESTRICT dest, const struct Vector *RESTRICT src)
 {
 	if (dest == NULL || src == NULL) {
 		if (VECTOR_NO_PANIC_ON_NULL) {
@@ -410,7 +410,7 @@ void vector_duplicate(Vector *RESTRICT dest, const Vector *RESTRICT src)
 	vector_assert(dest);
 }
 
-void vector_clear(Vector *vec)
+void vector_clear(struct Vector *vec)
 {
 	if (vec == NULL) {
 		if (VECTOR_NO_PANIC_ON_NULL) {

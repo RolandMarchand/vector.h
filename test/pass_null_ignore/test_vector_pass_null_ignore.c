@@ -1,5 +1,4 @@
 #include "unity/unity.h"
-#define VECTOR_NO_PANIC_ON_NULL 1
 #include "vector_generated.h"
 
 void setUp(void)

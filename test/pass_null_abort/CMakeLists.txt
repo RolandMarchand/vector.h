@@ -1,0 +1,3 @@
+add_executable(test_vector_pass_null_abort EXCLUDE_FROM_ALL test_vector_pass_null_abort.c vector_generated.c)
+target_link_libraries(test_vector_pass_null_abort PRIVATE unity)
+add_test(NAME VectorPassNullAbort COMMAND test_vector_pass_null_abort)

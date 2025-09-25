@@ -1,0 +1,3 @@
+add_executable(test_vector_usual_behavior EXCLUDE_FROM_ALL test_vector_usual_behavior.c vector_generated.c)
+target_link_libraries(test_vector_usual_behavior PRIVATE unity)
+add_test(NAME VectorUsualBehavior COMMAND test_vector_usual_behavior)

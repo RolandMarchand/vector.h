@@ -1,10 +1,4 @@
 #include "unity/unity.h"
-
-void *return_null(void *ignored1, size_t ignored2);
-
-#define VECTOR_REALLOC(p, s) (return_null((p), (s)))
-#define VECTOR_FREE(p) (free((p)))
-#define VECTOR_LONG_JUMP_NO_ABORT
 #include "vector_generated.h"
 
 jmp_buf abort_jmp;
