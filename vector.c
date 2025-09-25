@@ -84,15 +84,10 @@ extern jmp_buf abort_jmp;
 #define VECTOR_IS_SIZE_ZERO(vec) ((vec)->end == (vec)->begin)
 #define VECTOR_CAPACITY(vec) (size_t)((vec)->end_of_storage - (vec)->begin)
 
-typedef int lmao;
+typedef int Vector_Custom_Type_;
 
-typedef struct Vector {
-	lmao *begin;
-	lmao *end;
-	lmao *end_of_storage;
-} Vector;
-
-enum { VECTOR_DEFAULT_CAPACITY = 8, VECTOR_GROWTH_FACTOR = 2 };
+struct Vector;
+typedef struct Vector Vector;
 
 VECTOR_NORETURN void vector_panic(const char *message);
 void vector_assert(const Vector *vec);
@@ -101,14 +96,22 @@ void vector_grow(Vector *vec, size_t desired);
 void vector_free(Vector *vec);
 /* Capacity is in element count */
 void vector_init(Vector *vec, size_t capacity);
-void vector_push(Vector *vec, lmao value);
-lmao vector_pop(Vector *vec);
-lmao vector_get(const Vector *vec, size_t idx);
-void vector_set(Vector *vec, size_t idx, lmao value);
-void vector_insert(Vector *vec, size_t idx, lmao value);
+void vector_push(Vector *vec, Vector_Custom_Type_ value);
+Vector_Custom_Type_ vector_pop(Vector *vec);
+Vector_Custom_Type_ vector_get(const Vector *vec, size_t idx);
+void vector_set(Vector *vec, size_t idx, Vector_Custom_Type_ value);
+void vector_insert(Vector *vec, size_t idx, Vector_Custom_Type_ value);
 void vector_delete(Vector *vec, size_t idx);
 void vector_duplicate(Vector *RESTRICT dest, const Vector *RESTRICT src);
 void vector_clear(Vector *vec);
+
+struct Vector {
+	Vector_Custom_Type_ *begin;
+	Vector_Custom_Type_ *end;
+	Vector_Custom_Type_ *end_of_storage;
+};
+
+enum { VECTOR_DEFAULT_CAPACITY = 8, VECTOR_GROWTH_FACTOR = 2 };
 
 VECTOR_NORETURN void vector_panic(const char *message)
 {
@@ -136,7 +139,7 @@ VECTOR_INLINE void vector_assert(const Vector *vec)
 void vector_grow(Vector *vec, size_t desired)
 {
 	size_t old_size = 0;
-	lmao *new_begin = NULL;
+	Vector_Custom_Type_ *new_begin = NULL;
 
 	if (vec == NULL) {
 		if (VECTOR_NO_PANIC_ON_NULL) {
@@ -158,7 +161,7 @@ void vector_grow(Vector *vec, size_t desired)
 
 	old_size = VECTOR_SIZE(vec);
 
-	new_begin = VECTOR_REALLOC(vec->begin, desired * sizeof(lmao));
+	new_begin = VECTOR_REALLOC(vec->begin, desired * sizeof(Vector_Custom_Type_));
 	if (new_begin == NULL) {
 		vector_panic("Out of memory. Panic.");
 	}
@@ -205,7 +208,7 @@ void vector_init(Vector *vec, size_t capacity)
 		return;
 	}
 
-	vec->begin = VECTOR_REALLOC(NULL, capacity * sizeof(lmao));
+	vec->begin = VECTOR_REALLOC(NULL, capacity * sizeof(Vector_Custom_Type_));
 	if (vec->begin == NULL) {
 		vector_panic("Out of memory. Panic.");
 	}
@@ -216,7 +219,7 @@ void vector_init(Vector *vec, size_t capacity)
 	vector_assert(vec);
 }
 
-void vector_push(Vector *vec, lmao value)
+void vector_push(Vector *vec, Vector_Custom_Type_ value)
 {
 	if (vec == NULL) {
 		if (VECTOR_NO_PANIC_ON_NULL) {
@@ -240,10 +243,10 @@ void vector_push(Vector *vec, lmao value)
 	vec->end++;
 }
 
-lmao vector_pop(Vector *vec)
+Vector_Custom_Type_ vector_pop(Vector *vec)
 {
-	lmao nothing = { 0 };
-	lmao ret = { 0 };
+	Vector_Custom_Type_ nothing = { 0 };
+	Vector_Custom_Type_ ret = { 0 };
 
 	if (vec == NULL) {
 		if (VECTOR_NO_PANIC_ON_NULL) {
@@ -264,9 +267,9 @@ lmao vector_pop(Vector *vec)
 	return ret;
 }
 
-lmao vector_get(const Vector *vec, size_t idx)
+Vector_Custom_Type_ vector_get(const Vector *vec, size_t idx)
 {
-	lmao nothing = { 0 };
+	Vector_Custom_Type_ nothing = { 0 };
 
 	if (vec == NULL) {
 		if (VECTOR_NO_PANIC_ON_NULL) {
@@ -284,7 +287,7 @@ lmao vector_get(const Vector *vec, size_t idx)
 	return vec->begin[idx];
 }
 
-void vector_set(Vector *vec, size_t idx, lmao value)
+void vector_set(Vector *vec, size_t idx, Vector_Custom_Type_ value)
 {
 	if (vec == NULL) {
 		if (VECTOR_NO_PANIC_ON_NULL) {
@@ -302,9 +305,9 @@ void vector_set(Vector *vec, size_t idx, lmao value)
 	vec->begin[idx] = value;
 }
 
-void vector_insert(Vector *vec, size_t idx, lmao value)
+void vector_insert(Vector *vec, size_t idx, Vector_Custom_Type_ value)
 {
-	lmao *middle = NULL;
+	Vector_Custom_Type_ *middle = NULL;
 	size_t delete_size = 0;
 	size_t capacity = 0;
 
@@ -335,7 +338,7 @@ void vector_insert(Vector *vec, size_t idx, lmao value)
 	}
 
 	middle = vec->begin + idx;
-	delete_size = (vec->end - middle) * sizeof(lmao);
+	delete_size = (vec->end - middle) * sizeof(Vector_Custom_Type_);
 	memmove(middle + 1, middle, delete_size);
 	vec->end++;
 	middle[0] = value;
@@ -343,7 +346,7 @@ void vector_insert(Vector *vec, size_t idx, lmao value)
 
 void vector_delete(Vector *vec, size_t idx)
 {
-	lmao *middle = NULL;
+	Vector_Custom_Type_ *middle = NULL;
 	size_t delete_size = 0;
 
 	if (vec == NULL) {
@@ -366,7 +369,7 @@ void vector_delete(Vector *vec, size_t idx)
 	}
 
 	middle = vec->begin + idx;
-	delete_size = (vec->end - middle - 1) * sizeof(lmao);
+	delete_size = (vec->end - middle - 1) * sizeof(Vector_Custom_Type_);
 	memmove(middle, middle + 1, delete_size);
 	vec->end--;
 }
@@ -389,7 +392,7 @@ void vector_duplicate(Vector *RESTRICT dest, const Vector *RESTRICT src)
 		return;
 	}
 
-	dest->begin = VECTOR_REALLOC(NULL, VECTOR_CAPACITY(src) * sizeof(lmao));
+	dest->begin = VECTOR_REALLOC(NULL, VECTOR_CAPACITY(src) * sizeof(Vector_Custom_Type_));
 	if (dest->begin == NULL) {
 		vector_panic("Out of memory.");
 	}
@@ -397,7 +400,7 @@ void vector_duplicate(Vector *RESTRICT dest, const Vector *RESTRICT src)
 	dest->end = dest->begin + VECTOR_SIZE(src);
 	dest->end_of_storage = dest->begin + VECTOR_CAPACITY(src);
 
-	memcpy(dest->begin, src->begin, VECTOR_SIZE(src) * sizeof(lmao));
+	memcpy(dest->begin, src->begin, VECTOR_SIZE(src) * sizeof(Vector_Custom_Type_));
 
 	vector_assert(dest);
 }
