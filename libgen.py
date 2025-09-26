@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import re
 
 def read_file(filename):
     """Read the input C file"""
@@ -15,11 +16,21 @@ def write_file(filename, lines):
 
 def transform_line(line):
     new_line = line.rstrip('\n') + "\\\n"
-    new_line = new_line.replace("Vector", "Struct_Name_")
     new_line = new_line.replace("VECTOR_DEFINE_PANIC(vector)", "VECTOR_DEFINE_PANIC(Functions_Prefix_)")
-    new_line = new_line.replace("vector", "Functions_Prefix_##")
-    new_line = new_line.replace("SampleType", "Custom_Type_")
-    return new_line
+    tokenized = tokenize_code_line(new_line)
+    new_tokenized = []
+    for token in tokenized:
+        if token.startswith('"'):
+            token = token.replace("Vector", "\"#Struct_Name_\"")
+            token = token.replace("vector", "\"#Functions_Prefix_\"")
+            token = token.replace("SampleType", "\"#Custom_Type_\"")
+        else:
+            token = token.replace("Vector", "Struct_Name_")
+            token = token.replace("vector", "Functions_Prefix_##")
+            token = token.replace("SampleType", "Custom_Type_")
+        new_tokenized.append(token)
+
+    return "".join(new_tokenized)
 
 
 def main():
@@ -59,6 +70,27 @@ def main():
 
     write_file("vector.h", result)
 
+def tokenize_code_line(line):
+    """
+    Tokenizes a line of code, keeping string literals intact.
+    
+    Args:
+        line (str): A line of code to tokenize
+        
+    Returns:
+        list: List of tokens where strings are preserved as complete tokens
+    """
+    pattern = r'("(?:[^"\\]|\\.)*")|' + r'([^"]+)'
+    
+    tokens = []
+    matches = re.finditer(pattern, line)
+    
+    for match in matches:
+        token = match.group(0)
+        if token:
+            tokens.append(token)
+    
+    return tokens
 
 if __name__ == "__main__":
     main()

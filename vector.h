@@ -245,7 +245,7 @@ void Functions_Prefix_##_grow(struct Struct_Name_ *vec, size_t desired)\
 			return;\
 		}\
 		Functions_Prefix_##_panic(\
-			"Null passed to Functions_Prefix_##_grow but non-null argument expected.");\
+			"Null passed to "#Functions_Prefix_"_grow but non-null argument expected.");\
 	}\
 	Functions_Prefix_##_assert(vec);\
 \
@@ -254,7 +254,7 @@ void Functions_Prefix_##_grow(struct Struct_Name_ *vec, size_t desired)\
 			return;\
 		}\
 		if (VECTOR_CAPACITY(vec) > desired) {\
-			Functions_Prefix_##_panic("Struct_Name_ shrinking not supported.");\
+			Functions_Prefix_##_panic(""#Struct_Name_" shrinking not supported.");\
 		}\
 	}\
 \
@@ -277,7 +277,7 @@ void Functions_Prefix_##_free(struct Struct_Name_ *vec)\
 			return;\
 		}\
 		Functions_Prefix_##_panic(\
-			"Null passed to Functions_Prefix_##_free but non-null argument expected.");\
+			"Null passed to "#Functions_Prefix_"_free but non-null argument expected.");\
 	}\
 \
 	Functions_Prefix_##_assert(vec);\
@@ -295,7 +295,7 @@ void Functions_Prefix_##_init(struct Struct_Name_ *vec, size_t capacity)\
 			return;\
 		}\
 		Functions_Prefix_##_panic(\
-			"Null passed to Functions_Prefix_##_init but non-null argument expected.");\
+			"Null passed to "#Functions_Prefix_"_init but non-null argument expected.");\
 	}\
 \
 	if (vec->begin || vec->end || vec->end_of_storage) {\
@@ -325,7 +325,7 @@ void Functions_Prefix_##_push(struct Struct_Name_ *vec, Custom_Type_ value)\
 			return;\
 		}\
 		Functions_Prefix_##_panic(\
-			"Null passed to Functions_Prefix_##_push but non-null argument expected.");\
+			"Null passed to "#Functions_Prefix_"_push but non-null argument expected.");\
 	}\
 \
 	Functions_Prefix_##_assert(vec);\
@@ -352,12 +352,12 @@ Custom_Type_ Functions_Prefix_##_pop(struct Struct_Name_ *vec)\
 			return nothing;\
 		}\
 		Functions_Prefix_##_panic(\
-			"Null passed to Functions_Prefix_##_pop but non-null argument expected.");\
+			"Null passed to "#Functions_Prefix_"_pop but non-null argument expected.");\
 	}\
 	Functions_Prefix_##_assert(vec);\
 \
 	if (VECTOR_IS_SIZE_ZERO(vec)) {\
-		Functions_Prefix_##_panic("Cannot pop from empty Functions_Prefix_##.");\
+		Functions_Prefix_##_panic("Cannot pop from empty "#Functions_Prefix_".");\
 	}\
 \
 	ret = vec->end[-1];\
@@ -375,7 +375,7 @@ Custom_Type_ Functions_Prefix_##_get(const struct Struct_Name_ *vec, size_t idx)
 			return nothing;\
 		}\
 		Functions_Prefix_##_panic(\
-			"Null passed to Functions_Prefix_##_get but non-null argument expected.");\
+			"Null passed to "#Functions_Prefix_"_get but non-null argument expected.");\
 	}\
 	Functions_Prefix_##_assert(vec);\
 \
@@ -393,7 +393,7 @@ void Functions_Prefix_##_set(struct Struct_Name_ *vec, size_t idx, Custom_Type_ 
 			return;\
 		}\
 		Functions_Prefix_##_panic(\
-			"Null passed to Functions_Prefix_##_set but non-null argument expected.");\
+			"Null passed to "#Functions_Prefix_"_set but non-null argument expected.");\
 	}\
 	Functions_Prefix_##_assert(vec);\
 \
@@ -415,7 +415,7 @@ void Functions_Prefix_##_insert(struct Struct_Name_ *vec, size_t idx, Custom_Typ
 			return;\
 		}\
 		Functions_Prefix_##_panic(\
-			"Null passed to Functions_Prefix_##_insert but non-null argument expected.");\
+			"Null passed to "#Functions_Prefix_"_insert but non-null argument expected.");\
 	}\
 	Functions_Prefix_##_assert(vec);\
 \
@@ -453,7 +453,7 @@ void Functions_Prefix_##_delete(struct Struct_Name_ *vec, size_t idx)\
 			return;\
 		}\
 		Functions_Prefix_##_panic(\
-			"Null passed to Functions_Prefix_##_delete but non-null argument expected.");\
+			"Null passed to "#Functions_Prefix_"_delete but non-null argument expected.");\
 	}\
 	Functions_Prefix_##_assert(vec);\
 \
@@ -480,7 +480,7 @@ void Functions_Prefix_##_duplicate(struct Struct_Name_ *RESTRICT dest, const str
 			return;\
 		}\
 		Functions_Prefix_##_panic(\
-			"Null passed to Functions_Prefix_##_duplicate but non-null argument expected.");\
+			"Null passed to "#Functions_Prefix_"_duplicate but non-null argument expected.");\
 	}\
 	Functions_Prefix_##_assert(src);\
 \
@@ -512,7 +512,7 @@ void Functions_Prefix_##_clear(struct Struct_Name_ *vec)\
 			return;\
 		}\
 		Functions_Prefix_##_panic(\
-			"Null passed to Functions_Prefix_##_clear but non-null argument expected.");\
+			"Null passed to "#Functions_Prefix_"_clear but non-null argument expected.");\
 	}\
 	Functions_Prefix_##_assert(vec);\
 \
