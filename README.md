@@ -34,12 +34,14 @@ int main(void) {
 
 1. Include the header and declare your vector type:
 ```c
+/* my_vector.h */
 #include "vector.h"
 VECTOR_DECLARE(MyVector, my_vector, float)
 ```
 
 2. Define the implementation (usually in a .c file):
 ```c
+#include "my_vector.h"
 VECTOR_DEFINE(MyVector, my_vector, float)
 ```
 
@@ -55,6 +57,13 @@ for (float *f = v.begin; f != v.end; f++) {
 }
 
 my_vector_free(&v);
+```
+
+Alternatively, if you plan to use your vector within a single file, you can do:
+```c
+#include "vector.h"
+VECTOR_DECLARE(MyVector, my_vector, float)
+VECTOR_DEFINE(MyVector, my_vector, float)
 ```
 
 ## API Overview
@@ -89,15 +98,15 @@ make test
 
 Tests cover normal operation, edge cases, out-of-memory conditions, and null pointer handling.
 
-## Why `vector.h` Over [stb_ds.h](https://github.com/nothings/stb/blob/master/stb_ds.h)
+## Why vector.h Over [stb_ds.h](https://github.com/nothings/stb/blob/master/stb_ds.h)
 
 - **Just as convenient**: both are single-header libraries
-- **Better type safety**: `stb_ds.h` includes no compile-time type checking, unlike `vector.h`
-- **Faster iteration**: `stb_ds.h` relies on index calculation, while `vector.h` follows `std::vector`'s approach of direct pointer access
-- **More reliable memory**: `stb_ds.h` relies on undefined behavior to hide its header behind the data, not `vector.h`
-- **Easier to debug**: `stb_ds.h` hides header data in debugging environment, while `vector.h` exposes its simple pointers internal structure
-- **No memory corruption**: `stb_ds.h` silently corrupts your memory on out-of-bounds access, while `vector.h` fails fast and lets the developer know by panicking
-- **Better licensing**: `stb_ds.h` offers either MIT or public domain, while `vector.h` offers BSD0, which is less restrictive than MIT (no attribution, allows for re-licensing) and more universal than public domain
+- **Better type safety**: stb_ds.h includes no compile-time type checking, unlike vector.h
+- **Faster iteration**: stb_ds.h relies on index calculation, while vector.h follows std::vector's approach of direct pointer access
+- **More reliable memory**: stb_ds.h relies on undefined behavior to hide its header behind the data, not vector.h
+- **Easier to debug**: stb_ds.h hides header data in debugging environment, while vector.h exposes its simple pointers internal structure
+- **No memory corruption**: stb_ds.h silently corrupts your memory on out-of-bounds access, while vector.h fails fast and lets the developer know by panicking
+- **Better licensing**: stb_ds.h offers either MIT or public domain, while vector.h offers BSD0, which is less restrictive than MIT (no attribution, allows for re-licensing) and more universal than public domain
 
 ## Contribution
 
