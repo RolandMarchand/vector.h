@@ -13,7 +13,7 @@ void tearDown(void)
 
 void test_shrink_abort(void)
 {
-	Vector vec = {0};
+	Vector vec = { 0 };
 	vector_init(&vec, 10);
 
 	if (setjmp(abort_jmp) == 0) {
@@ -29,7 +29,7 @@ void test_shrink_abort(void)
 
 void test_grow_from_zero(void)
 {
-	Vector vec = {0};
+	Vector vec = { 0 };
 
 	vector_grow(&vec, 5);
 
@@ -45,14 +45,14 @@ void test_grow_from_zero(void)
 
 void test_grow_0(void)
 {
-	Vector vec = {0};
-	Vector vec_copy = {0};
+	Vector vec = { 0 };
+	Vector vec_copy = { 0 };
 
 	vector_init(&vec, 10);
 	memcpy(&vec_copy, &vec, sizeof(Vector));
 
 	vector_grow(&vec, 10);
-	
+
 	TEST_ASSERT_EQUAL_MEMORY(&vec_copy, &vec, sizeof(Vector));
 
 	vector_free(&vec);
@@ -60,7 +60,7 @@ void test_grow_0(void)
 
 void test_grow(void)
 {
-	Vector vec = {0};
+	Vector vec = { 0 };
 	int idx = 0;
 	vector_init(&vec, 10);
 
@@ -77,8 +77,8 @@ void test_grow(void)
 
 void test_free(void)
 {
-	Vector vec = {0};
-	Vector vec_zero = {0};
+	Vector vec = { 0 };
+	Vector vec_zero = { 0 };
 	vector_init(&vec, 10);
 	vector_free(&vec);
 	TEST_ASSERT_EQUAL_MEMORY(&vec_zero, &vec, sizeof(Vector));
@@ -86,16 +86,16 @@ void test_free(void)
 
 void test_free_zero(void)
 {
-	Vector vec = {0};
-	Vector vec_zero = {0};
+	Vector vec = { 0 };
+	Vector vec_zero = { 0 };
 	vector_free(&vec);
 	TEST_ASSERT_EQUAL_MEMORY(&vec_zero, &vec, sizeof(Vector));
 }
 
 void test_init_zero(void)
 {
-	Vector vec = {0};
-	Vector vec_copy = {0};
+	Vector vec = { 0 };
+	Vector vec_copy = { 0 };
 
 	memcpy(&vec_copy, &vec, sizeof(Vector));
 
@@ -106,11 +106,11 @@ void test_init_zero(void)
 
 void test_init_garbage(void)
 {
-	Vector vec = {0};
+	Vector vec = { 0 };
 
-	vec.begin = (void*)0xDEADBEEF;
-	vec.end = (void*)((char*)0xDEADBEEF + 1);
-	vec.end_of_storage = (void*)((char*)0xDEADBEEF + 2);
+	vec.begin = (void *)0xDEADBEEF;
+	vec.end = (void *)((char *)0xDEADBEEF + 1);
+	vec.end_of_storage = (void *)((char *)0xDEADBEEF + 2);
 
 	if (setjmp(abort_jmp) == 0) {
 		vector_init(&vec, 5);
@@ -118,12 +118,12 @@ void test_init_garbage(void)
 		return;
 	}
 
-	TEST_FAIL();	
+	TEST_FAIL();
 }
 
 void test_init(void)
 {
-	Vector vec = {0};
+	Vector vec = { 0 };
 	vector_init(&vec, 5);
 
 	TEST_ASSERT_EQUAL_INT(5, VECTOR_CAPACITY(&vec));
@@ -138,7 +138,7 @@ void test_init(void)
 
 void test_push_from_zero(void)
 {
-	Vector vec = {0};
+	Vector vec = { 0 };
 	vector_push(&vec, 8);
 	TEST_ASSERT_EQUAL_INT(VECTOR_DEFAULT_CAPACITY, VECTOR_CAPACITY(&vec));
 	TEST_ASSERT_EQUAL_INT(1, VECTOR_SIZE(&vec));
@@ -151,7 +151,7 @@ void test_push_from_zero(void)
 
 void test_push(void)
 {
-	Vector vec = {0};
+	Vector vec = { 0 };
 	int idx = 0;
 	vector_init(&vec, VECTOR_DEFAULT_CAPACITY);
 
@@ -159,7 +159,7 @@ void test_push(void)
 		vector_push(&vec, idx);
 		TEST_ASSERT_EQUAL_INT(idx + 1, VECTOR_SIZE(&vec));
 		TEST_ASSERT_EQUAL_INT(VECTOR_DEFAULT_CAPACITY,
-				  VECTOR_CAPACITY(&vec));
+				      VECTOR_CAPACITY(&vec));
 		TEST_ASSERT_EQUAL_INT(idx, vector_get(&vec, idx));
 	}
 
@@ -167,7 +167,7 @@ void test_push(void)
 
 	TEST_ASSERT_EQUAL_INT(VECTOR_DEFAULT_CAPACITY + 1, VECTOR_SIZE(&vec));
 	TEST_ASSERT_EQUAL_INT(VECTOR_DEFAULT_CAPACITY * VECTOR_GROWTH_FACTOR,
-			  VECTOR_CAPACITY(&vec));
+			      VECTOR_CAPACITY(&vec));
 	TEST_ASSERT_EQUAL_INT(-1, vector_get(&vec, VECTOR_DEFAULT_CAPACITY));
 
 	vector_free(&vec);
@@ -175,7 +175,7 @@ void test_push(void)
 
 void test_pop_zero(void)
 {
-	Vector vec = {0};
+	Vector vec = { 0 };
 
 	if (setjmp(abort_jmp) == 0) {
 		vector_pop(&vec);
@@ -188,9 +188,9 @@ void test_pop_zero(void)
 
 void test_pop(void)
 {
-	Vector vec = {0};
+	Vector vec = { 0 };
 	int idx = 0;
-	
+
 	for (idx = 0; idx < 1000; idx++) {
 		vector_push(&vec, idx);
 		TEST_ASSERT_EQUAL_INT(idx, vector_pop(&vec));
@@ -202,8 +202,8 @@ void test_pop(void)
 
 void test_get_out_of_range(void)
 {
-	Vector vec = {0};
-	
+	Vector vec = { 0 };
+
 	if (setjmp(abort_jmp) == 0) {
 		vector_get(&vec, 0);
 	} else {
@@ -223,10 +223,10 @@ void test_get_out_of_range(void)
 
 void test_get(void)
 {
-	Vector vec = {0};
+	Vector vec = { 0 };
 	int idx = 0;
 	int jdx = 0;
-	
+
 	for (idx = 0; idx < 1000; idx++) {
 		vector_push(&vec, idx);
 		for (jdx = 0; jdx <= idx; jdx++) {
@@ -239,8 +239,8 @@ void test_get(void)
 
 void test_set_out_of_range(void)
 {
-	Vector vec = {0};
-	
+	Vector vec = { 0 };
+
 	if (setjmp(abort_jmp) == 0) {
 		vector_set(&vec, 0, 100);
 	} else {
@@ -261,7 +261,7 @@ void test_set_out_of_range(void)
 
 void test_set(void)
 {
-	Vector vec = {0};
+	Vector vec = { 0 };
 	int idx = 0;
 	int jdx = 0;
 
@@ -278,10 +278,10 @@ void test_set(void)
 
 void test_insert_from_zero(void)
 {
-	Vector vec = {0};
+	Vector vec = { 0 };
 	int idx = 0;
-	
-	for(; idx < 100; idx++) {
+
+	for (; idx < 100; idx++) {
 		vector_insert(&vec, idx, idx);
 
 		TEST_ASSERT_EQUAL_INT(idx, vector_get(&vec, idx));
@@ -294,14 +294,14 @@ void test_insert_from_zero(void)
 
 void test_insert_start(void)
 {
-	Vector vec = {0};
+	Vector vec = { 0 };
 	int idx = 0;
 	int jdx = 0;
 
 	for (idx = 0; idx < 100; idx++) {
 		vector_push(&vec, idx);
 	}
-	
+
 	for (idx = 0; idx < 100; idx++) {
 		vector_insert(&vec, 0, idx + 100);
 
@@ -311,7 +311,8 @@ void test_insert_start(void)
 
 		/* Test after the insert point */
 		for (jdx = 0; jdx < 100; jdx++) {
-			TEST_ASSERT_EQUAL_INT(jdx, vector_get(&vec, idx + jdx + 1));
+			TEST_ASSERT_EQUAL_INT(jdx,
+					      vector_get(&vec, idx + jdx + 1));
 		}
 	}
 
@@ -320,15 +321,15 @@ void test_insert_start(void)
 
 void test_insert_middle(void)
 {
-	Vector vec = {0};
+	Vector vec = { 0 };
 	int idx = 0;
 	int jdx = 0;
 
 	for (idx = 0; idx < 100; idx++) {
 		vector_push(&vec, idx);
 	}
-	
-	for(idx = 0; idx < 100; idx++) {
+
+	for (idx = 0; idx < 100; idx++) {
 		vector_insert(&vec, 50, idx + 100);
 
 		TEST_ASSERT_EQUAL_INT(idx + 100, vector_get(&vec, 50));
@@ -342,7 +343,8 @@ void test_insert_middle(void)
 
 		/* Test after the insert point */
 		for (jdx = 0; jdx < 50; jdx++) {
-			TEST_ASSERT_EQUAL_INT(jdx + 50, vector_get(&vec, jdx + idx + 51));
+			TEST_ASSERT_EQUAL_INT(jdx + 50,
+					      vector_get(&vec, jdx + idx + 51));
 		}
 	}
 
@@ -351,18 +353,19 @@ void test_insert_middle(void)
 
 void test_insert_end(void)
 {
-	Vector vec = {0};
+	Vector vec = { 0 };
 	int idx = 0;
 	int jdx = 0;
 
 	for (idx = 0; idx < 100; idx++) {
 		vector_push(&vec, idx);
 	}
-	
+
 	for (idx = 0; idx < 100; idx++) {
 		vector_insert(&vec, VECTOR_SIZE(&vec), idx + 100);
 
-		TEST_ASSERT_EQUAL_INT(idx + 100, vector_get(&vec, VECTOR_SIZE(&vec) - 1));
+		TEST_ASSERT_EQUAL_INT(idx + 100,
+				      vector_get(&vec, VECTOR_SIZE(&vec) - 1));
 		TEST_ASSERT_EQUAL_INT(idx + 101, VECTOR_SIZE(&vec));
 		TEST_ASSERT_NOT_NULL(vec.begin);
 
@@ -372,18 +375,18 @@ void test_insert_end(void)
 		}
 	}
 
-	vector_free(&vec);	
+	vector_free(&vec);
 }
 
 void test_insert_out_of_range(void)
 {
-	Vector vec = {0};
+	Vector vec = { 0 };
 	int idx = 0;
 
 	for (idx = 0; idx < 100; idx++) {
 		vector_push(&vec, idx);
 	}
-	
+
 	if (setjmp(abort_jmp) == 0) {
 		vector_insert(&vec, 101, 100);
 	} else {
@@ -401,8 +404,8 @@ void test_insert_out_of_range(void)
 
 void test_insert_out_of_range_from_zero(void)
 {
-	Vector vec = {0};
-	
+	Vector vec = { 0 };
+
 	if (setjmp(abort_jmp) == 0) {
 		vector_insert(&vec, 1, 100);
 	} else {
@@ -419,7 +422,7 @@ void test_insert_out_of_range_from_zero(void)
 
 void test_delete(void)
 {
-	Vector vec = {0};
+	Vector vec = { 0 };
 	int idx = 0;
 	int jdx = 0;
 	size_t capacity = 0;
@@ -439,7 +442,8 @@ void test_delete(void)
 
 		/* Test after the delete point */
 		for (jdx = 0; jdx < 99 - idx; jdx++) {
-			TEST_ASSERT_EQUAL_INT(jdx + idx + 1, vector_get(&vec, jdx));
+			TEST_ASSERT_EQUAL_INT(jdx + idx + 1,
+					      vector_get(&vec, jdx));
 		}
 	}
 
@@ -448,7 +452,7 @@ void test_delete(void)
 
 void test_delete_half(void)
 {
-	Vector vec = {0};
+	Vector vec = { 0 };
 	int idx = 0;
 	int jdx = 0;
 	size_t capacity = 0;
@@ -473,7 +477,8 @@ void test_delete_half(void)
 
 		/* Test after the delete point */
 		for (jdx = 50; jdx < 99 - idx; jdx++) {
-			TEST_ASSERT_EQUAL_INT(jdx + idx + 1, vector_get(&vec, jdx));
+			TEST_ASSERT_EQUAL_INT(jdx + idx + 1,
+					      vector_get(&vec, jdx));
 		}
 	}
 
@@ -482,7 +487,7 @@ void test_delete_half(void)
 
 void test_delete_last(void)
 {
-	Vector vec = {0};
+	Vector vec = { 0 };
 	int idx = 0;
 	int jdx = 0;
 	size_t capacity = 0;
@@ -506,18 +511,18 @@ void test_delete_last(void)
 		}
 	}
 
-	vector_free(&vec);	
+	vector_free(&vec);
 }
 
 void test_delete_out_of_range(void)
 {
-	Vector vec = {0};
+	Vector vec = { 0 };
 	int idx = 0;
-	
+
 	for (idx = 0; idx < 100; idx++) {
 		vector_push(&vec, idx);
 	}
-	
+
 	if (setjmp(abort_jmp) == 0) {
 		vector_delete(&vec, 101);
 	} else {
@@ -535,8 +540,8 @@ void test_delete_out_of_range(void)
 
 void test_delete_out_of_range_from_zero(void)
 {
-	Vector vec = {0};
-	
+	Vector vec = { 0 };
+
 	if (setjmp(abort_jmp) == 0) {
 		vector_delete(&vec, 0);
 	} else {
@@ -557,25 +562,24 @@ void test_delete_out_of_range_from_zero(void)
 
 void test_duplicate_from_zero(void)
 {
-	Vector src = {0};
-	Vector dest = {0};
-	Vector expected = {0};
+	Vector src = { 0 };
+	Vector dest = { 0 };
+	Vector expected = { 0 };
 
 	/* Garbage to be overridden */
-	dest.begin = (void*)0xBEEF;
-	dest.end = (void*)((char*)0xBEEF + 1);
-	dest.end_of_storage = (void*)((char*)0xBEEF + 2);
-	
+	dest.begin = (void *)0xBEEF;
+	dest.end = (void *)((char *)0xBEEF + 1);
+	dest.end_of_storage = (void *)((char *)0xBEEF + 2);
+
 	vector_duplicate(&dest, &src);
 	TEST_ASSERT_EQUAL_MEMORY(&expected, &src, sizeof(Vector));
 	TEST_ASSERT_EQUAL_MEMORY(&expected, &dest, sizeof(Vector));
-	
 }
 
 void test_duplicate_to_zero(void)
 {
-	Vector src = {0};
-	Vector dest = {0};
+	Vector src = { 0 };
+	Vector dest = { 0 };
 
 	vector_push(&src, 10);
 	vector_duplicate(&dest, &src);
@@ -591,13 +595,13 @@ void test_duplicate_to_zero(void)
 
 void test_duplicate(void)
 {
-	Vector src = {0};
-	Vector dest = {0};
+	Vector src = { 0 };
+	Vector dest = { 0 };
 
 	/* Garbage to be overridden */
-	dest.begin = (void*)0xBEEF;
-	dest.end = (void*)((char*)0xBEEF + 1);
-	dest.end_of_storage = (void*)((char*)0xBEEF + 2);
+	dest.begin = (void *)0xBEEF;
+	dest.end = (void *)((char *)0xBEEF + 1);
+	dest.end_of_storage = (void *)((char *)0xBEEF + 2);
 
 	vector_push(&src, 10);
 	vector_duplicate(&dest, &src);
@@ -613,7 +617,7 @@ void test_duplicate(void)
 
 void test_clear_zero(void)
 {
-	Vector vec = {0};
+	Vector vec = { 0 };
 	vector_clear(&vec);
 	TEST_ASSERT_NULL(vec.begin);
 	TEST_ASSERT_NULL(vec.end);
@@ -624,7 +628,7 @@ void test_clear_zero(void)
 
 void test_clear(void)
 {
-	Vector vec = {0};
+	Vector vec = { 0 };
 	int idx = 0;
 
 	for (idx = 0; idx < 100; idx++) {

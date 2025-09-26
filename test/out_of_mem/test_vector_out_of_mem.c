@@ -20,7 +20,7 @@ void *return_null(void *ignored1, size_t ignored2)
 
 void test_grow_out_of_mem(void)
 {
-	Vector vec = {0};
+	Vector vec = { 0 };
 
 	if (setjmp(abort_jmp) == 0) {
 		vector_grow(&vec, 10);
@@ -33,7 +33,7 @@ void test_grow_out_of_mem(void)
 
 void test_init_out_of_mem(void)
 {
-	Vector vec = {0};
+	Vector vec = { 0 };
 
 	if (setjmp(abort_jmp) == 0) {
 		vector_init(&vec, 10);
@@ -47,9 +47,9 @@ void test_init_out_of_mem(void)
 
 void test_duplicate_out_of_mem(void)
 {
-	int buffer[10] = {0};
-	Vector src = {0};
-	Vector dest = {0};
+	int buffer[10] = { 0 };
+	Vector src = { 0 };
+	Vector dest = { 0 };
 
 	src.begin = buffer;
 	src.end = buffer + 1;

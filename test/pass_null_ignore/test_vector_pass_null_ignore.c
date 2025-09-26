@@ -9,9 +9,7 @@ void tearDown(void)
 {
 }
 
-
 #undef VECTOR_NO_PANIC_ON_NULL
-
 
 void test_grow_pass_null_ignore(void)
 {
