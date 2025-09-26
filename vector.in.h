@@ -10,12 +10,21 @@
  * 
  * This library is portable (tested on GCC/Clang/MSVC/ICX, x86_64/ARM64, all
  * warnings and pedantic) and is C89 compatible.
+ *
+ * To generate vectors, use the macros VECTOR_DECLARE() to generate the header,
+ * and VECTOR_DEFINE() to generate the source. It is recommended to place them
+ * in their respective files. Generate as many different types of vectors as
+ * you want.
+ *
+ * This library is not thread safe.
+ *
+ * This library follows a 2x capacity growing policy.
  * 
  * Vector is optimized for iteration, here is an example:
  * for (int *i = v.begin; i != v.end; i++)
  * 
- * To configure this library, either #define the symbols before including
- * the library.
+ * To configure this library #define the symbols before including the library.
+ * This is usually done in the header file where VECTOR_DECLARE() is called.
  * 
  * Configuration options:
  * 
@@ -30,7 +39,97 @@
  * 
  * - VECTOR_LONG_JUMP_NO_ABORT (default undefined): for testing only. Jump to
  *   externally defined "jmp_buf abort_jmp" instead of panicking. Unlike other
- *   configuration options, must be defined before including the library. */
+ *   configuration options, must be defined before including the library.
+ *
+ * 
+ * API Functions:
+ *
+ * The following documentation takes this generated vector for instance:
+ * VECTOR_DECLARE(Vector, vector, SampleType)
+ * 
+ * All functions panic if vec is NULL (unless VECTOR_NO_PANIC_ON_NULL).
+ *
+ * VECTOR_SIZE(Vector *vec)
+ *   Macro that returns the current element count as a size_t.
+ *
+ * VECTOR_CAPACITY(Vector *vec)
+ *   Macro that returns the total capacity allocated in element count as a
+ *   size_t.
+ *
+ * void vector_init(Vector *vec, size_t capacity)
+ *   Initialize empty vector. vec must be zero-initialized. capacity is in
+ *   element count. Panics if vec contains garbage data or on memory failure.
+ *
+ * void vector_free(Vector *vec)
+ *   Deallocate vector memory. Safe to call on already-freed vectors.
+ *
+ * void vector_grow(Vector *vec, size_t desired)
+ *   Increase capacity to desired element count. Panics if shrinking attempted.
+ *
+ * void vector_push(Vector *vec, SampleType value)
+ *   Append element, growing capacity if needed. Auto-initializes empty vectors.
+ *   O(1) amortized complexity.
+ *
+ * SampleType vector_pop(Vector *vec)
+ *   Remove and return last element. Panics if empty.
+ *
+ * SampleType vector_get(const Vector *vec, size_t idx)
+ *   Get element at 0-based index. Panics if idx out of bounds.
+ *
+ * void vector_set(Vector *vec, size_t idx, SampleType value)
+ *   Set element at 0-based index. Panics if idx out of bounds.
+ *
+ * void vector_insert(Vector *vec, size_t idx, SampleType value)
+ *   Insert element at 0-based index, shifting later elements right.
+ *   idx equal to size appends to end. Panics if idx > size.
+ *   O(n) worst-case complexity.
+ *
+ * void vector_delete(Vector *vec, size_t idx)
+ *   Remove element at 0-based index, shifting later elements left.
+ *   Panics if idx out of bounds. O(n) worst-case complexity.
+ *
+ * void vector_duplicate(Vector *RESTRICT dest, const Vector *RESTRICT src)
+ *   Copy src vector to dest. dest must be uninitialized. Overwrites existing
+ *   dest data without freeing it.
+ *
+ * void vector_clear(Vector *vec)
+ *   Remove all elements without deallocating capacity.
+ *
+ *
+ * Example:
+ *  int main(void)
+ *  {
+ *     Vector numbers = {0};
+ *     int first_element, last_element, popped_element;
+ *     int *ptr;
+ *     
+ *     vector_push(&numbers, 10);
+ *     vector_push(&numbers, 20);
+ *     vector_push(&numbers, 30);
+ *     vector_push(&numbers, 40);
+ *     vector_push(&numbers, 50);
+ *     
+ *     first_element = vector_get(&numbers, 0);
+ *     last_element = vector_get(&numbers, VECTOR_SIZE(&numbers) - 1);
+ *     
+ *     vector_insert(&numbers, 2, 25);
+ *     
+ *     for (ptr = numbers.begin; ptr != numbers.end; ptr++) {
+ *     }
+ *     
+ *     popped_element = vector_pop(&numbers);
+ *     
+ *     vector_delete(&numbers, 1);
+ *     
+ *     vector_set(&numbers, 0, 99);
+ *     
+ *     vector_clear(&numbers);
+ *     
+ *     vector_free(&numbers);
+ *     
+ *     return 0;
+ *  }
+ */
 
 #if defined(VECTOR_REALLOC) && !defined(VECTOR_FREE) || \
 	!defined(VECTOR_REALLOC) && defined(VECTOR_FREE)
@@ -93,10 +192,8 @@ typedef struct Vector {
 
 VECTOR_NORETURN void vector_panic(const char *message);
 void vector_assert(const Vector *vec);
-/* Desired is in element count */
 void vector_grow(Vector *vec, size_t desired);
 void vector_free(Vector *vec);
-/* Capacity is in element count */
 void vector_init(Vector *vec, size_t capacity);
 void vector_push(Vector *vec, SampleType value);
 SampleType vector_pop(Vector *vec);

@@ -36,6 +36,9 @@ def main():
             continue
         elif "/* Declarations stop here */" in line:
             in_macro = False
+            last_value = result.pop()
+            last_value = last_value[:-2] + last_value[-1]
+            result.append(last_value)
             continue
         elif "/* Definitions start here */" in line:
             in_macro = True
@@ -44,6 +47,9 @@ def main():
             continue
         elif "/* Definitions stop here */" in line:
             in_macro = False
+            last_value = result.pop()
+            last_value = last_value[:-2] + last_value[-1]
+            result.append(last_value)
             continue
 
         if in_macro:
