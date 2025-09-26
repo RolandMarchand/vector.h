@@ -97,6 +97,12 @@ Tests cover normal operation, edge cases, out-of-memory conditions, and null poi
 - **Libraries**: Type-safe collections without external dependencies
 - **Legacy Codebases**: C89 compatibility for older projects
 
+## Contribution
+
+Contributors and library hackers should work on `vector.in.h` instead of
+`vector.h`. It is a version of the library with hardcoded types and function
+names. To generate the final library from it, run `libgen.py`.
+
 ## License
 
 This library is licensed under the BSD Zero license.
