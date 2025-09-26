@@ -100,13 +100,13 @@ Tests cover normal operation, edge cases, out-of-memory conditions, and null poi
 
 ## Why vector.h Over [stb_ds.h](https://github.com/nothings/stb/blob/master/stb_ds.h)
 
-- **Just as convenient**: both are single-header libraries
-- **Better type safety**: stb_ds.h includes no compile-time type checking, unlike vector.h
-- **Faster iteration**: stb_ds.h relies on index calculation, while vector.h follows std::vector's approach of direct pointer access
-- **More reliable memory**: stb_ds.h relies on undefined behavior to hide its header behind the data, not vector.h
-- **Easier to debug**: stb_ds.h hides header data in debugging environment, while vector.h exposes its simple pointers internal structure
-- **No memory corruption**: stb_ds.h silently corrupts your memory on out-of-bounds access, while vector.h fails fast and lets the developer know by panicking
-- **Better licensing**: stb_ds.h offers either MIT or public domain, while vector.h offers BSD0, which is less restrictive than MIT (no attribution, allows for re-licensing) and more universal than public domain
+- **Just as convenient**: Both are single-header libraries
+- **Enhanced type safety**: Unlike stb_ds.h, vector.h provides compile-time type checking
+- **Optimized iteration**: Vector.h uses the same iteration technique as std::vector, while stb_ds.h requires slower index calculations
+- **Safer memory management**: Vector.h avoids the undefined behavior that stb_ds.h uses to hide headers behind data
+- **Superior debugging experience**: Vector.h exposes its straightforward pointer-based internals, whereas stb_ds.h hides header data from debugging tools
+- **Robust error handling**: Vector.h fails fast with clear panic messages on out-of-bounds access, while stb_ds.h silently corrupts memory
+- **More permissive licensing**: Vector.h uses BSD0 (no attribution required, unlimited relicensing), which is less restrictive than stb_ds.h's MIT and more universal than its public domain option since the concept doesn't exist in some jurisdictions
 
 ## Contribution
 
