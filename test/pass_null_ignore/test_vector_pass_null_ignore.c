@@ -58,13 +58,13 @@ void test_delete_pass_null_ignore(void)
 
 void test_duplicate_pass_null_ignore_dest(void)
 {
-	Vector src;
+	Vector src = { 0 };
 	vector_duplicate(NULL, &src);
 }
 
 void test_duplicate_pass_null_ignore_src(void)
 {
-	Vector dest;
+	Vector dest = { 0 };
 	vector_duplicate(&dest, NULL);
 }
 
