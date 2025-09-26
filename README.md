@@ -1,4 +1,4 @@
-# Vector - Type-Safe Dynamic Arrays for C
+# vector.h - Type-Safe Dynamic Arrays for C
 
 A production-ready, macro-based vector library to generate type-safe dynamic arrays.
 
@@ -98,15 +98,15 @@ make test
 
 Tests cover normal operation, edge cases, out-of-memory conditions, and null pointer handling.
 
-## Why vector.h Over [stb_ds.h](https://github.com/nothings/stb/blob/master/stb_ds.h)
+## Why vector.h Over [stb_ds.h](https://github.com/nothings/stb/blob/master/stb_ds.h)?
 
 - **Just as convenient**: Both are single-header libraries
 - **Enhanced type safety**: Unlike stb_ds.h, vector.h provides compile-time type checking
-- **Optimized iteration**: Vector.h uses the same iteration technique as std::vector, while stb_ds.h requires slower index calculations
-- **Safer memory management**: Vector.h avoids the undefined behavior that stb_ds.h uses to hide headers behind data
-- **Superior debugging experience**: Vector.h exposes its straightforward pointer-based internals, whereas stb_ds.h hides header data from debugging tools
-- **Robust error handling**: Vector.h fails fast with clear panic messages on out-of-bounds access, while stb_ds.h silently corrupts memory
-- **More permissive licensing**: Vector.h uses BSD0 (no attribution required, unlimited relicensing), which is less restrictive than stb_ds.h's MIT and more universal than its public domain option since the concept doesn't exist in some jurisdictions
+- **Optimized iteration**: vector.h uses the same iteration technique as std::vector, while stb_ds.h requires slower index calculations
+- **Safer memory management**: vector.h avoids the undefined behavior that stb_ds.h uses to hide headers behind data
+- **Superior debugging experience**: vector.h exposes its straightforward pointer-based internals, whereas stb_ds.h hides header data from debugging tools
+- **Robust error handling**: vector.h fails fast with clear panic messages on out-of-bounds access, while stb_ds.h silently corrupts memory
+- **More permissive licensing**: vector.h uses BSD0 (no attribution required, unlimited relicensing), which is less restrictive than stb_ds.h's MIT and more universal than its public domain option since the concept doesn't exist in some jurisdictions
 
 ## Contribution
 
