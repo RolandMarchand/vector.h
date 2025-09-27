@@ -28,8 +28,12 @@
  * 
  * Configuration options:
  * 
- * - VECTOR_NO_PANIC_ON_NULL (default 0): if true (1), does not panic
- *   upon passing NULL to vector functions. Otherwise, panic.
+ * - VECTOR_NO_PANIC_ON_NULL (default 0): if true (1), does not panic upon
+ *   passing NULL to vector functions. Otherwise, panic.
+ *
+ * - VECTOR_NO_PANIC_ON_OOB (default 0): if true (1), does not panic upon
+ *   getting, setting, inserting, or deleting out of bounds. Those operations
+ *   become no-ops. Otherwise, panic.
  * 
  * - VECTOR_REALLOC (default realloc(3)): specify the allocator. If using
  *   a custom allocator, must also specify VECTOR_FREE.
@@ -138,6 +142,10 @@
 #if !defined(VECTOR_REALLOC) && !defined(VECTOR_FREE)
 #define VECTOR_REALLOC(p, s) (realloc((p), (s)))
 #define VECTOR_FREE(p) (free((p)))
+#endif
+
+#ifndef VECTOR_NO_PANIC_ON_OOB
+#define VECTOR_NO_PANIC_ON_OOB 0
 #endif
 
 #ifndef VECTOR_NO_PANIC_ON_NULL
@@ -380,6 +388,9 @@ Custom_Type_ Functions_Prefix_##_get(const struct Struct_Name_ *vec, size_t idx)
 	Functions_Prefix_##_assert(vec);\
 \
 	if (idx >= VECTOR_SIZE(vec)) {\
+		if (VECTOR_NO_PANIC_ON_OOB) {\
+			return nothing;\
+		}\
 		Functions_Prefix_##_panic("Out of range.");\
 	}\
 \
@@ -398,6 +409,9 @@ void Functions_Prefix_##_set(struct Struct_Name_ *vec, size_t idx, Custom_Type_ 
 	Functions_Prefix_##_assert(vec);\
 \
 	if (idx >= VECTOR_SIZE(vec)) {\
+		if (VECTOR_NO_PANIC_ON_OOB) {\
+			return;\
+		}\
 		Functions_Prefix_##_panic("Out of range.");\
 	}\
 \
@@ -420,6 +434,9 @@ void Functions_Prefix_##_insert(struct Struct_Name_ *vec, size_t idx, Custom_Typ
 	Functions_Prefix_##_assert(vec);\
 \
 	if (idx > VECTOR_SIZE(vec)) {\
+		if (VECTOR_NO_PANIC_ON_OOB) {\
+			return;\
+		}\
 		Functions_Prefix_##_panic("Out of range.");\
 	}\
 \
@@ -458,6 +475,9 @@ void Functions_Prefix_##_delete(struct Struct_Name_ *vec, size_t idx)\
 	Functions_Prefix_##_assert(vec);\
 \
 	if (idx >= VECTOR_SIZE(vec)) {\
+		if (VECTOR_NO_PANIC_ON_OOB) {\
+			return;\
+		}\
 		Functions_Prefix_##_panic("Out of range.");\
 	}\
 \
@@ -473,7 +493,8 @@ void Functions_Prefix_##_delete(struct Struct_Name_ *vec, size_t idx)\
 	vec->end--;\
 }\
 \
-void Functions_Prefix_##_duplicate(struct Struct_Name_ *RESTRICT dest, const struct Struct_Name_ *RESTRICT src)\
+void Functions_Prefix_##_duplicate(struct Struct_Name_ *RESTRICT dest,\
+		      const struct Struct_Name_ *RESTRICT src)\
 {\
 	if (dest == NULL || src == NULL) {\
 		if (VECTOR_NO_PANIC_ON_NULL) {\

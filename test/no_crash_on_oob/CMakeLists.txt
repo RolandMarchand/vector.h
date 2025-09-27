@@ -1,0 +1,3 @@
+add_executable(test_vector_no_crash_on_oob EXCLUDE_FROM_ALL test_vector_no_crash_on_oob.c vector_generated.c)
+target_link_libraries(test_vector_no_crash_on_oob PRIVATE unity)
+add_test(NAME VectorNoCrashOnOOB COMMAND test_vector_no_crash_on_oob)

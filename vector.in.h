@@ -28,8 +28,12 @@
  * 
  * Configuration options:
  * 
- * - VECTOR_NO_PANIC_ON_NULL (default 0): if true (1), does not panic
- *   upon passing NULL to vector functions. Otherwise, panic.
+ * - VECTOR_NO_PANIC_ON_NULL (default 0): if true (1), does not panic upon
+ *   passing NULL to vector functions. Otherwise, panic.
+ *
+ * - VECTOR_NO_PANIC_ON_OOB (default 0): if true (1), does not panic upon
+ *   getting, setting, inserting, or deleting out of bounds. Those operations
+ *   become no-ops. Otherwise, panic.
  * 
  * - VECTOR_REALLOC (default realloc(3)): specify the allocator. If using
  *   a custom allocator, must also specify VECTOR_FREE.
@@ -138,6 +142,10 @@
 #if !defined(VECTOR_REALLOC) && !defined(VECTOR_FREE)
 #define VECTOR_REALLOC(p, s) (realloc((p), (s)))
 #define VECTOR_FREE(p) (free((p)))
+#endif
+
+#ifndef VECTOR_NO_PANIC_ON_OOB
+#define VECTOR_NO_PANIC_ON_OOB 0
 #endif
 
 #ifndef VECTOR_NO_PANIC_ON_NULL
@@ -382,6 +390,9 @@ SampleType vector_get(const struct Vector *vec, size_t idx)
 	vector_assert(vec);
 
 	if (idx >= VECTOR_SIZE(vec)) {
+		if (VECTOR_NO_PANIC_ON_OOB) {
+			return nothing;
+		}
 		vector_panic("Out of range.");
 	}
 
@@ -400,6 +411,9 @@ void vector_set(struct Vector *vec, size_t idx, SampleType value)
 	vector_assert(vec);
 
 	if (idx >= VECTOR_SIZE(vec)) {
+		if (VECTOR_NO_PANIC_ON_OOB) {
+			return;
+		}
 		vector_panic("Out of range.");
 	}
 
@@ -422,6 +436,9 @@ void vector_insert(struct Vector *vec, size_t idx, SampleType value)
 	vector_assert(vec);
 
 	if (idx > VECTOR_SIZE(vec)) {
+		if (VECTOR_NO_PANIC_ON_OOB) {
+			return;
+		}
 		vector_panic("Out of range.");
 	}
 
@@ -460,6 +477,9 @@ void vector_delete(struct Vector *vec, size_t idx)
 	vector_assert(vec);
 
 	if (idx >= VECTOR_SIZE(vec)) {
+		if (VECTOR_NO_PANIC_ON_OOB) {
+			return;
+		}
 		vector_panic("Out of range.");
 	}
 
@@ -475,7 +495,8 @@ void vector_delete(struct Vector *vec, size_t idx)
 	vec->end--;
 }
 
-void vector_duplicate(struct Vector *RESTRICT dest, const struct Vector *RESTRICT src)
+void vector_duplicate(struct Vector *RESTRICT dest,
+		      const struct Vector *RESTRICT src)
 {
 	if (dest == NULL || src == NULL) {
 		if (VECTOR_NO_PANIC_ON_NULL) {
