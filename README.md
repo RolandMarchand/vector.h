@@ -83,7 +83,7 @@ Define before including the library:
 
 ```c
 #define VECTOR_NO_PANIC_ON_NULL 1       /* Return silently on NULL instead of panic */
-#define VECTOR_NO_PANIC_ON_OOB 1       /* Turns out-of-bounds access into no-ops instead of panic */
+#define VECTOR_NO_PANIC_ON_OOB 1        /* Turns out-of-bounds access into no-ops instead of panic */
 #define VECTOR_REALLOC my_realloc       /* Custom allocator */
 #define VECTOR_FREE my_free             /* Custom deallocator */
 ```
