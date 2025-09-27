@@ -25,7 +25,7 @@ int main(void) {
 ## Features
 
 - **Type-safe**: Generate vectors for any type
-- **Portable**: C89 compatible, tested on GCC/Clang/MSVC/ICX across x86_64/ARM64
+- **Portable**: C89 compatible, tested on GCC/Clang/MSVC/ICX across x86/x86_64/ARM64
 - **Robust**: Comprehensive bounds checking and memory management
 - **Configurable**: Custom allocators, null-pointer policies
 - **Zero dependencies**: Just standard C library

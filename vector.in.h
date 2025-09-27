@@ -8,8 +8,8 @@
 
 /* Library to generate type-safe vector types.
  * 
- * This library is portable (tested on GCC/Clang/MSVC/ICX, x86_64/ARM64, all
- * warnings and pedantic) and is C89 compatible.
+ * This library is portable (tested on GCC/Clang/MSVC/ICX, x86/x86_64/ARM64,
+ * all warnings and pedantic) and is C89 compatible.
  *
  * To generate vectors, use the macros VECTOR_DECLARE() to generate the header,
  * and VECTOR_DEFINE() to generate the source. It is recommended to place them
