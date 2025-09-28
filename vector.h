@@ -11,10 +11,11 @@
  * This library is portable (tested on GCC/Clang/MSVC/ICX, x86/x86_64/ARM64,
  * all warnings and pedantic) and is C89 compatible.
  *
- * To generate vectors, use the macros VECTOR_DECLARE() to generate the header,
- * and VECTOR_DEFINE() to generate the source. It is recommended to place them
- * in their respective files. Generate as many different types of vectors as
- * you want.
+ * To generate vectors, use the macros VECTOR_DECLARE(Struct_Name_,
+ * Functions_Prefix_, Custom_Type_) to generate the header, and
+ * VECTOR_DEFINE(Struct_Name_, Functions_Prefix_, Custom_Type_) to generate
+ * the source. It is recommended to place them in their respective
+ * files. Generate as many different types of vectors as you want.
  *
  * This library is not thread safe.
  *

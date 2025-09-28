@@ -5,6 +5,7 @@ A production-ready, macro-based vector library to generate type-safe dynamic arr
 ```c
 #include "vector.h"
 
+/* Arguments are: vector name, func. prefix, and input type */
 VECTOR_DECLARE(IntVector, int_vector, int)
 VECTOR_DEFINE(IntVector, int_vector, int)
 
