@@ -112,13 +112,12 @@ void test_init_garbage(void)
 	vec.end = (void *)((char *)0xDEADBEEF + 1);
 	vec.end_of_storage = (void *)((char *)0xDEADBEEF + 2);
 
-	if (setjmp(abort_jmp) == 0) {
-		vector_init(&vec, 5);
-	} else {
-		return;
-	}
+	vector_init(&vec, 5);
 
-	TEST_FAIL();
+	TEST_ASSERT_EQUAL_INT(0, VECTOR_SIZE(&vec));
+	TEST_ASSERT_EQUAL_INT(5, VECTOR_CAPACITY(&vec));
+
+	vector_free(&vec);
 }
 
 void test_init(void)
@@ -645,6 +644,39 @@ void test_clear(void)
 	vector_free(&vec);
 }
 
+void test_init_overflow(void)
+{
+	size_t would_overflow = (((size_t)-1) / sizeof(int)) + 1;
+	Vector vec = { 0 };
+
+	if (setjmp(abort_jmp) == 0) {
+		vector_init(&vec, would_overflow);
+	} else {
+		vector_free(&vec);
+		return;
+	}
+
+	vector_free(&vec);
+	TEST_FAIL();
+}
+
+void test_grow_overflow(void)
+{
+	size_t would_overflow = (((size_t)-1) / sizeof(int)) + 1;
+	Vector vec = { 0 };
+	vector_init(&vec, 10);
+
+	if (setjmp(abort_jmp) == 0) {
+		vector_grow(&vec, would_overflow);
+	} else {
+		vector_free(&vec);
+		return;
+	}
+
+	vector_free(&vec);
+	TEST_FAIL();
+}
+
 int main(void)
 {
 	UNITY_BEGIN();
@@ -682,6 +714,8 @@ int main(void)
 	RUN_TEST(test_duplicate);
 	RUN_TEST(test_clear_zero);
 	RUN_TEST(test_clear);
+	RUN_TEST(test_init_overflow);
+	RUN_TEST(test_grow_overflow);
 
 	return UNITY_END();
 }

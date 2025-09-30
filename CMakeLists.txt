@@ -8,7 +8,7 @@ set(CMAKE_C_COMPILER clang)
 set(CMAKE_C_STANDARD 90)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wpedantic -Werror=vla -Werror=implicit-function-declaration -Wno-psabi")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic -Werror=vla -Werror=implicit-function-declaration -Wno-psabi")
 
 include(CheckCSourceCompiles)
 

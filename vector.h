@@ -11,11 +11,10 @@
  * This library is portable (tested on GCC/Clang/MSVC/ICX, x86/x86_64/ARM64,
  * all warnings and pedantic) and is C89 compatible.
  *
- * To generate vectors, use the macros VECTOR_DECLARE(Struct_Name_,
- * Functions_Prefix_, Custom_Type_) to generate the header, and
- * VECTOR_DEFINE(Struct_Name_, Functions_Prefix_, Custom_Type_) to generate
- * the source. It is recommended to place them in their respective
- * files. Generate as many different types of vectors as you want.
+ * To generate vectors, use the macros VECTOR_DECLARE() to generate the header,
+ * and VECTOR_DEFINE() to generate the source. It is recommended to place them
+ * in their respective files. Generate as many different types of vectors as
+ * you want.
  *
  * This library is not thread safe.
  *
@@ -35,6 +34,10 @@
  * - VECTOR_NO_PANIC_ON_OOB (default 0): if true (1), does not panic upon
  *   getting, setting, inserting, or deleting out of bounds. Those operations
  *   become no-ops. Otherwise, panic.
+ *
+ * - VECTOR_NO_PANIC_ON_OVERFLOW (default 0): if true(1), does not panic on
+ *   setting capacities that would cause an unsigned integer overflow. Those
+ *   operations become no-ops. Otherwise, panic.
  * 
  * - VECTOR_REALLOC (default realloc(3)): specify the allocator. If using
  *   a custom allocator, must also specify VECTOR_FREE.
@@ -149,6 +152,10 @@
 #define VECTOR_NO_PANIC_ON_OOB 0
 #endif
 
+#ifndef VECTOR_NO_PANIC_ON_OVERFLOW
+#define VECTOR_NO_PANIC_ON_OVERFLOW 0
+#endif
+
 #ifndef VECTOR_NO_PANIC_ON_NULL
 #define VECTOR_NO_PANIC_ON_NULL 0
 #endif
@@ -164,6 +171,8 @@ extern jmp_buf abort_jmp;
 #define VECTOR_NORETURN _Noreturn
 #elif defined(__GNUC__) || defined(__clang__)
 #define VECTOR_NORETURN __attribute__((noreturn))
+#elif defined(_MSC_VER)
+#define VECTOR_NORETURN __declspec(noreturn)
 #else
 #define VECTOR_NORETURN
 #endif
@@ -258,6 +267,13 @@ void Functions_Prefix_##_grow(struct Struct_Name_ *vec, size_t desired)\
 	}\
 	Functions_Prefix_##_assert(vec);\
 \
+	if (desired != 0 && sizeof(Custom_Type_) > ((size_t)-1) / desired) {\
+		if (VECTOR_NO_PANIC_ON_OVERFLOW) {\
+			return;\
+		}\
+		Functions_Prefix_##_panic("Requested capacity would cause size overflow.");\
+	}\
+\
 	if (vec->begin) {\
 		if (VECTOR_CAPACITY(vec) == desired) {\
 			return;\
@@ -307,13 +323,15 @@ void Functions_Prefix_##_init(struct Struct_Name_ *vec, size_t capacity)\
 			"Null passed to "#Functions_Prefix_"_init but non-null argument expected.");\
 	}\
 \
-	if (vec->begin || vec->end || vec->end_of_storage) {\
-		Functions_Prefix_##_panic(\
-			"Uninitialized garbage memory, cannot initialize.");\
-	}\
-\
 	if (capacity == 0) {\
 		return;\
+	}\
+\
+	if (sizeof(Custom_Type_) > ((size_t)-1) / capacity) {\
+		if (VECTOR_NO_PANIC_ON_OVERFLOW) {\
+			return;\
+		}\
+		Functions_Prefix_##_panic("Requested capacity would cause size overflow.");\
 	}\
 \
 	vec->begin = VECTOR_REALLOC(NULL, capacity * sizeof(Custom_Type_));\

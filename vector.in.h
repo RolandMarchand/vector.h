@@ -34,6 +34,10 @@
  * - VECTOR_NO_PANIC_ON_OOB (default 0): if true (1), does not panic upon
  *   getting, setting, inserting, or deleting out of bounds. Those operations
  *   become no-ops. Otherwise, panic.
+ *
+ * - VECTOR_NO_PANIC_ON_OVERFLOW (default 0): if true(1), does not panic on
+ *   setting capacities that would cause an unsigned integer overflow. Those
+ *   operations become no-ops. Otherwise, panic.
  * 
  * - VECTOR_REALLOC (default realloc(3)): specify the allocator. If using
  *   a custom allocator, must also specify VECTOR_FREE.
@@ -61,14 +65,15 @@
  *   size_t.
  *
  * void vector_init(Vector *vec, size_t capacity)
- *   Initialize empty vector. vec must be zero-initialized. capacity is in
- *   element count. Panics if vec contains garbage data or on memory failure.
+ *   Initialize empty vector. Leaks memory if initializes an already initialized
+ *   vector. Panics on unsigned integer overflow with capacity.
  *
  * void vector_free(Vector *vec)
  *   Deallocate vector memory. Safe to call on already-freed vectors.
  *
  * void vector_grow(Vector *vec, size_t desired)
- *   Increase capacity to desired element count. Panics if shrinking attempted.
+ *   Increase capacity to desired element count. Panics if shrinking
+ *   attempted. Panics on unsigned integer overflow with desired.
  *
  * void vector_push(Vector *vec, SampleType value)
  *   Append element, growing capacity if needed. Auto-initializes empty vectors.
@@ -148,6 +153,10 @@
 #define VECTOR_NO_PANIC_ON_OOB 0
 #endif
 
+#ifndef VECTOR_NO_PANIC_ON_OVERFLOW
+#define VECTOR_NO_PANIC_ON_OVERFLOW 0
+#endif
+
 #ifndef VECTOR_NO_PANIC_ON_NULL
 #define VECTOR_NO_PANIC_ON_NULL 0
 #endif
@@ -163,6 +172,8 @@ extern jmp_buf abort_jmp;
 #define VECTOR_NORETURN _Noreturn
 #elif defined(__GNUC__) || defined(__clang__)
 #define VECTOR_NORETURN __attribute__((noreturn))
+#elif defined(_MSC_VER)
+#define VECTOR_NORETURN __declspec(noreturn)
 #else
 #define VECTOR_NORETURN
 #endif
@@ -259,6 +270,13 @@ void vector_grow(struct Vector *vec, size_t desired)
 	}
 	vector_assert(vec);
 
+	if (desired != 0 && sizeof(SampleType) > ((size_t)-1) / desired) {
+		if (VECTOR_NO_PANIC_ON_OVERFLOW) {
+			return;
+		}
+		vector_panic("Requested capacity would cause size overflow.");
+	}
+
 	if (vec->begin) {
 		if (VECTOR_CAPACITY(vec) == desired) {
 			return;
@@ -308,13 +326,15 @@ void vector_init(struct Vector *vec, size_t capacity)
 			"Null passed to vector_init but non-null argument expected.");
 	}
 
-	if (vec->begin || vec->end || vec->end_of_storage) {
-		vector_panic(
-			"Uninitialized garbage memory, cannot initialize.");
-	}
-
 	if (capacity == 0) {
 		return;
+	}
+
+	if (sizeof(SampleType) > ((size_t)-1) / capacity) {
+		if (VECTOR_NO_PANIC_ON_OVERFLOW) {
+			return;
+		}
+		vector_panic("Requested capacity would cause size overflow.");
 	}
 
 	vec->begin = VECTOR_REALLOC(NULL, capacity * sizeof(SampleType));
