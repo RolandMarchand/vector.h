@@ -586,7 +586,7 @@ void test_duplicate_to_zero(void)
 	TEST_ASSERT_EQUAL_INT(10, vector_get(&dest, 0));
 	TEST_ASSERT_EQUAL_UINT(1, VECTOR_SIZE(&dest));
 	TEST_ASSERT_EQUAL_UINT(VECTOR_DEFAULT_CAPACITY, VECTOR_CAPACITY(&dest));
-	TEST_ASSERT(src.begin != dest.begin);
+	TEST_ASSERT_NOT_EQUAL(dest.begin, src.begin);
 
 	vector_free(&src);
 	vector_free(&dest);
