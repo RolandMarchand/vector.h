@@ -33,8 +33,8 @@ void test_grow_from_zero(void)
 
 	vector_grow(&vec, 5);
 
-	TEST_ASSERT_EQUAL_INT(5, VECTOR_CAPACITY(&vec));
-	TEST_ASSERT_EQUAL_INT(0, VECTOR_SIZE(&vec));
+	TEST_ASSERT_EQUAL_UINT(5, VECTOR_CAPACITY(&vec));
+	TEST_ASSERT_EQUAL_UINT(0, VECTOR_SIZE(&vec));
 	TEST_ASSERT(vec.begin == vec.end);
 	TEST_ASSERT_NOT_NULL(vec.begin);
 	TEST_ASSERT_NOT_NULL(vec.end);
@@ -68,8 +68,8 @@ void test_grow(void)
 
 	for (idx = 11; idx < 1000; idx++) {
 		vector_grow(&vec, idx);
-		TEST_ASSERT_EQUAL_INT(idx, VECTOR_CAPACITY(&vec));
-		TEST_ASSERT_EQUAL_INT(3, VECTOR_SIZE(&vec));
+		TEST_ASSERT_EQUAL_UINT(idx, VECTOR_CAPACITY(&vec));
+		TEST_ASSERT_EQUAL_UINT(3, VECTOR_SIZE(&vec));
 	}
 
 	vector_free(&vec);
@@ -114,8 +114,8 @@ void test_init_garbage(void)
 
 	vector_init(&vec, 5);
 
-	TEST_ASSERT_EQUAL_INT(0, VECTOR_SIZE(&vec));
-	TEST_ASSERT_EQUAL_INT(5, VECTOR_CAPACITY(&vec));
+	TEST_ASSERT_EQUAL_UINT(0, VECTOR_SIZE(&vec));
+	TEST_ASSERT_EQUAL_UINT(5, VECTOR_CAPACITY(&vec));
 
 	vector_free(&vec);
 }
@@ -125,8 +125,8 @@ void test_init(void)
 	Vector vec = { 0 };
 	vector_init(&vec, 5);
 
-	TEST_ASSERT_EQUAL_INT(5, VECTOR_CAPACITY(&vec));
-	TEST_ASSERT_EQUAL_INT(0, VECTOR_SIZE(&vec));
+	TEST_ASSERT_EQUAL_UINT(5, VECTOR_CAPACITY(&vec));
+	TEST_ASSERT_EQUAL_UINT(0, VECTOR_SIZE(&vec));
 	TEST_ASSERT(vec.begin == vec.end);
 	TEST_ASSERT_NOT_NULL(vec.begin);
 	TEST_ASSERT_NOT_NULL(vec.end);
@@ -139,8 +139,8 @@ void test_push_from_zero(void)
 {
 	Vector vec = { 0 };
 	vector_push(&vec, 8);
-	TEST_ASSERT_EQUAL_INT(VECTOR_DEFAULT_CAPACITY, VECTOR_CAPACITY(&vec));
-	TEST_ASSERT_EQUAL_INT(1, VECTOR_SIZE(&vec));
+	TEST_ASSERT_EQUAL_UINT(VECTOR_DEFAULT_CAPACITY, VECTOR_CAPACITY(&vec));
+	TEST_ASSERT_EQUAL_UINT(1, VECTOR_SIZE(&vec));
 	TEST_ASSERT_EQUAL_INT(8, vector_get(&vec, 0));
 	TEST_ASSERT_NOT_NULL(vec.begin);
 	TEST_ASSERT_NOT_NULL(vec.end);
@@ -156,17 +156,17 @@ void test_push(void)
 
 	for (idx = 0; idx < VECTOR_DEFAULT_CAPACITY; idx++) {
 		vector_push(&vec, idx);
-		TEST_ASSERT_EQUAL_INT(idx + 1, VECTOR_SIZE(&vec));
-		TEST_ASSERT_EQUAL_INT(VECTOR_DEFAULT_CAPACITY,
-				      VECTOR_CAPACITY(&vec));
+		TEST_ASSERT_EQUAL_UINT(idx + 1, VECTOR_SIZE(&vec));
+		TEST_ASSERT_EQUAL_UINT(VECTOR_DEFAULT_CAPACITY,
+				       VECTOR_CAPACITY(&vec));
 		TEST_ASSERT_EQUAL_INT(idx, vector_get(&vec, idx));
 	}
 
 	vector_push(&vec, -1);
 
-	TEST_ASSERT_EQUAL_INT(VECTOR_DEFAULT_CAPACITY + 1, VECTOR_SIZE(&vec));
-	TEST_ASSERT_EQUAL_INT(VECTOR_DEFAULT_CAPACITY * VECTOR_GROWTH_FACTOR,
-			      VECTOR_CAPACITY(&vec));
+	TEST_ASSERT_EQUAL_UINT(VECTOR_DEFAULT_CAPACITY + 1, VECTOR_SIZE(&vec));
+	TEST_ASSERT_EQUAL_UINT(VECTOR_DEFAULT_CAPACITY * VECTOR_GROWTH_FACTOR,
+			       VECTOR_CAPACITY(&vec));
 	TEST_ASSERT_EQUAL_INT(-1, vector_get(&vec, VECTOR_DEFAULT_CAPACITY));
 
 	vector_free(&vec);
@@ -284,7 +284,7 @@ void test_insert_from_zero(void)
 		vector_insert(&vec, idx, idx);
 
 		TEST_ASSERT_EQUAL_INT(idx, vector_get(&vec, idx));
-		TEST_ASSERT_EQUAL_INT(idx + 1, VECTOR_SIZE(&vec));
+		TEST_ASSERT_EQUAL_UINT(idx + 1, VECTOR_SIZE(&vec));
 		TEST_ASSERT_NOT_NULL(vec.begin);
 	}
 
@@ -305,7 +305,7 @@ void test_insert_start(void)
 		vector_insert(&vec, 0, idx + 100);
 
 		TEST_ASSERT_EQUAL_INT(idx + 100, vector_get(&vec, 0));
-		TEST_ASSERT_EQUAL_INT(idx + 101, VECTOR_SIZE(&vec));
+		TEST_ASSERT_EQUAL_UINT(idx + 101, VECTOR_SIZE(&vec));
 		TEST_ASSERT_NOT_NULL(vec.begin);
 
 		/* Test after the insert point */
@@ -332,7 +332,7 @@ void test_insert_middle(void)
 		vector_insert(&vec, 50, idx + 100);
 
 		TEST_ASSERT_EQUAL_INT(idx + 100, vector_get(&vec, 50));
-		TEST_ASSERT_EQUAL_INT(idx + 101, VECTOR_SIZE(&vec));
+		TEST_ASSERT_EQUAL_UINT(idx + 101, VECTOR_SIZE(&vec));
 		TEST_ASSERT_NOT_NULL(vec.begin);
 
 		/* Test before the insert point */
@@ -365,7 +365,7 @@ void test_insert_end(void)
 
 		TEST_ASSERT_EQUAL_INT(idx + 100,
 				      vector_get(&vec, VECTOR_SIZE(&vec) - 1));
-		TEST_ASSERT_EQUAL_INT(idx + 101, VECTOR_SIZE(&vec));
+		TEST_ASSERT_EQUAL_UINT(idx + 101, VECTOR_SIZE(&vec));
 		TEST_ASSERT_NOT_NULL(vec.begin);
 
 		/* Test before the insert point */
@@ -435,8 +435,8 @@ void test_delete(void)
 	for (idx = 0; idx < 100; idx++) {
 		vector_delete(&vec, 0);
 
-		TEST_ASSERT_EQUAL_INT(99 - idx, VECTOR_SIZE(&vec));
-		TEST_ASSERT_EQUAL_INT(capacity, VECTOR_CAPACITY(&vec));
+		TEST_ASSERT_EQUAL_UINT(99 - idx, VECTOR_SIZE(&vec));
+		TEST_ASSERT_EQUAL_UINT(capacity, VECTOR_CAPACITY(&vec));
 		TEST_ASSERT_NOT_NULL(vec.begin);
 
 		/* Test after the delete point */
@@ -465,8 +465,8 @@ void test_delete_half(void)
 	for (idx = 0; idx < 50; idx++) {
 		vector_delete(&vec, 49);
 		TEST_ASSERT_EQUAL_INT(idx + 50, vector_get(&vec, 49));
-		TEST_ASSERT_EQUAL_INT(99 - idx, VECTOR_SIZE(&vec));
-		TEST_ASSERT_EQUAL_INT(capacity, VECTOR_CAPACITY(&vec));
+		TEST_ASSERT_EQUAL_UINT(99 - idx, VECTOR_SIZE(&vec));
+		TEST_ASSERT_EQUAL_UINT(capacity, VECTOR_CAPACITY(&vec));
 		TEST_ASSERT_NOT_NULL(vec.begin);
 
 		/* Test before the delete point */
@@ -500,8 +500,8 @@ void test_delete_last(void)
 	for (idx = 99; idx >= 0; idx--) {
 		vector_delete(&vec, idx);
 
-		TEST_ASSERT_EQUAL_INT(idx, VECTOR_SIZE(&vec));
-		TEST_ASSERT_EQUAL_INT(capacity, VECTOR_CAPACITY(&vec));
+		TEST_ASSERT_EQUAL_UINT(idx, VECTOR_SIZE(&vec));
+		TEST_ASSERT_EQUAL_UINT(capacity, VECTOR_CAPACITY(&vec));
 		TEST_ASSERT_NOT_NULL(vec.begin);
 
 		/* Test before the delete point */
@@ -584,8 +584,8 @@ void test_duplicate_to_zero(void)
 	vector_duplicate(&dest, &src);
 
 	TEST_ASSERT_EQUAL_INT(10, vector_get(&dest, 0));
-	TEST_ASSERT_EQUAL_INT(1, VECTOR_SIZE(&dest));
-	TEST_ASSERT_EQUAL_INT(VECTOR_DEFAULT_CAPACITY, VECTOR_CAPACITY(&dest));
+	TEST_ASSERT_EQUAL_UINT(1, VECTOR_SIZE(&dest));
+	TEST_ASSERT_EQUAL_UINT(VECTOR_DEFAULT_CAPACITY, VECTOR_CAPACITY(&dest));
 	TEST_ASSERT(src.begin != dest.begin);
 
 	vector_free(&src);
@@ -606,8 +606,8 @@ void test_duplicate(void)
 	vector_duplicate(&dest, &src);
 
 	TEST_ASSERT_EQUAL_INT(10, vector_get(&dest, 0));
-	TEST_ASSERT_EQUAL_INT(1, VECTOR_SIZE(&dest));
-	TEST_ASSERT_EQUAL_INT(VECTOR_DEFAULT_CAPACITY, VECTOR_CAPACITY(&dest));
+	TEST_ASSERT_EQUAL_UINT(1, VECTOR_SIZE(&dest));
+	TEST_ASSERT_EQUAL_UINT(VECTOR_DEFAULT_CAPACITY, VECTOR_CAPACITY(&dest));
 	TEST_ASSERT(src.begin != dest.begin);
 
 	vector_free(&src);
@@ -621,8 +621,8 @@ void test_clear_zero(void)
 	TEST_ASSERT_NULL(vec.begin);
 	TEST_ASSERT_NULL(vec.end);
 	TEST_ASSERT_NULL(vec.end_of_storage);
-	TEST_ASSERT_EQUAL_INT(0, VECTOR_SIZE(&vec));
-	TEST_ASSERT_EQUAL_INT(0, VECTOR_CAPACITY(&vec));
+	TEST_ASSERT_EQUAL_UINT(0, VECTOR_SIZE(&vec));
+	TEST_ASSERT_EQUAL_UINT(0, VECTOR_CAPACITY(&vec));
 }
 
 void test_clear(void)
@@ -638,8 +638,8 @@ void test_clear(void)
 	TEST_ASSERT_NOT_NULL(vec.begin);
 	TEST_ASSERT_NOT_NULL(vec.end);
 	TEST_ASSERT_NOT_NULL(vec.end_of_storage);
-	TEST_ASSERT_EQUAL_INT(0, VECTOR_SIZE(&vec));
-	TEST_ASSERT_GREATER_THAN(0, VECTOR_CAPACITY(&vec));
+	TEST_ASSERT_EQUAL_UINT(0, VECTOR_SIZE(&vec));
+	TEST_ASSERT_GREATER_THAN_UINT(0, VECTOR_CAPACITY(&vec));
 
 	vector_free(&vec);
 }
