@@ -4,7 +4,6 @@ project(vector VERSION 1.0
   DESCRIPTION "Library to generate type-safe vector types"
   LANGUAGES C)
 
-set(CMAKE_C_COMPILER clang)
 set(CMAKE_C_STANDARD 90)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
