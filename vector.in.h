@@ -7,7 +7,7 @@
 #include <string.h>
 
 /* Library to generate type-safe vector types.
- * 
+ *
  * This library is portable (tested on GCC/Clang/MSVC/ICX, x86/x86_64/ARM64,
  * all warnings and pedantic) and is C89 compatible.
  *
@@ -19,15 +19,15 @@
  * This library is not thread safe.
  *
  * This library follows a 2x capacity growing policy.
- * 
+ *
  * Vector is optimized for iteration, here is an example:
  * for (int *i = v.begin; i != v.end; i++)
- * 
+ *
  * To configure this library #define the symbols before including the library.
  * This is usually done in the header file where VECTOR_DECLARE() is called.
- * 
+ *
  * Configuration options:
- * 
+ *
  * - VECTOR_NO_PANIC_ON_NULL (default 0): if true (1), does not panic upon
  *   passing NULL to vector functions. Otherwise, panic.
  *
@@ -38,23 +38,23 @@
  * - VECTOR_NO_PANIC_ON_OVERFLOW (default 0): if true(1), does not panic on
  *   setting capacities that would cause an unsigned integer overflow. Those
  *   operations become no-ops. Otherwise, panic.
- * 
+ *
  * - VECTOR_REALLOC (default realloc(3)): specify the allocator. If using
  *   a custom allocator, must also specify VECTOR_FREE.
- * 
+ *
  * - VECTOR_FREE (default free(3)): specify the deallocator. If using a
  *   custom deallocator, must also specify VECTOR_REALLOC.
- * 
+ *
  * - VECTOR_LONG_JUMP_NO_ABORT (default undefined): for testing only. Jump to
  *   externally defined "jmp_buf abort_jmp" instead of panicking. Unlike other
  *   configuration options, must be defined before including the library.
  *
- * 
+ *
  * API Functions:
  *
  * The following documentation takes this generated vector for instance:
  * VECTOR_DECLARE(Vector, vector, SampleType)
- * 
+ *
  * All functions panic if vec is NULL (unless VECTOR_NO_PANIC_ON_NULL).
  *
  * VECTOR_SIZE(Vector *vec)
@@ -111,31 +111,31 @@
  *     Vector numbers = {0};
  *     int first_element, last_element, popped_element;
  *     int *ptr;
- *     
+ *
  *     vector_push(&numbers, 10);
  *     vector_push(&numbers, 20);
  *     vector_push(&numbers, 30);
  *     vector_push(&numbers, 40);
  *     vector_push(&numbers, 50);
- *     
+ *
  *     first_element = vector_get(&numbers, 0);
  *     last_element = vector_get(&numbers, VECTOR_SIZE(&numbers) - 1);
- *     
+ *
  *     vector_insert(&numbers, 2, 25);
- *     
+ *
  *     for (ptr = numbers.begin; ptr != numbers.end; ptr++) {
  *     }
- *     
+ *
  *     popped_element = vector_pop(&numbers);
- *     
+ *
  *     vector_delete(&numbers, 1);
- *     
+ *
  *     vector_set(&numbers, 0, 99);
- *     
+ *
  *     vector_clear(&numbers);
- *     
+ *
  *     vector_free(&numbers);
- *     
+ *
  *     return 0;
  *  }
  */
