@@ -12,9 +12,9 @@
  * all warnings and pedantic) and is C89 compatible.
  *
  * To generate vectors, use the macros VECTOR_DECLARE() to generate the header,
- * and VECTOR_DEFINE() to generate the source. It is recommended to place them
- * in their respective files. Generate as many different types of vectors as
- * you want.
+ * and VECTOR_DEFINE() to generate the source (see example below for usage). It
+ * is recommended to place them in their respective files. Generate as many
+ * different types of vectors as you want.
  *
  * This library is not thread safe.
  *
@@ -65,14 +65,16 @@
  *   size_t.
  *
  * void vector_init(Vector *vec, size_t capacity)
- *   Initialize empty vector. vec must be zero-initialized. capacity is in
- *   element count. Panics if vec contains garbage data or on memory failure.
+ *   Initialize empty vector. Leaks memory if initializes an already initialized
+ *   vector. Panics on unsigned integer overflow with capacity.
  *
  * void vector_free(Vector *vec)
  *   Deallocate vector memory. Safe to call on already-freed vectors.
  *
  * void vector_grow(Vector *vec, size_t desired)
  *   Increase capacity to desired element count. Panics if shrinking attempted.
+ *   Panics on unsigned integer overflow of desired multiplied by the size of
+ *   vector type's size.
  *
  * void vector_push(Vector *vec, SampleType value)
  *   Append element, growing capacity if needed. Auto-initializes empty vectors.
@@ -105,6 +107,10 @@
  *
  *
  * Example:
+ *  // VECTOR_X(TypeName, func_prefixes, StoredType)
+ *  VECTOR_DECLARE(Vector, vector, int)
+ *  VECTOR_DEFINE(Vector, vector, int)
+ *
  *  int main(void)
  *  {
  *     Vector numbers = {0};

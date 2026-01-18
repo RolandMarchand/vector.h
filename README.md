@@ -71,10 +71,13 @@ VECTOR_DEFINE(MyVector, my_vector, float)
 
 - `VECTOR_SIZE(vec)` - Get element count
 - `VECTOR_CAPACITY(vec)` - Get allocated capacity
+- `vector_init(vec, size)` - Set a desired initial capacity (optional)
 - `vector_push(vec, value)` - Append element (O(1) amortized)
 - `vector_pop(vec)` - Remove and return last element
 - `vector_get(vec, idx)` / `vector_set(vec, idx, value)` - Random access
 - `vector_insert(vec, idx, value)` / `vector_delete(vec, idx)` - Insert/remove at index
+- `vector_grow(vec, desired_size)` - Increase capacity of vector, but cannot shrink
+- `vector_duplicate(vec_dest, vec_src)` - Copy src to dest (dest must be uninitialized) 
 - `vector_clear(vec)` - Remove all elements
 - `vector_free(vec)` - Deallocate memory
 
