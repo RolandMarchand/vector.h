@@ -53,7 +53,7 @@ my_vector_push(&v, 3.14f);
 my_vector_push(&v, 2.71f);
 
 /* Fast iteration */
-for (float *f = v.begin; f != v.end; f++) {
+for (float *f = v.begin; f < v.end; f++) {
 	printf("%.2f ", *f);
 }
 
@@ -71,12 +71,12 @@ VECTOR_DEFINE(MyVector, my_vector, float)
 
 - `VECTOR_SIZE(vec)` - Get element count
 - `VECTOR_CAPACITY(vec)` - Get allocated capacity
-- `vector_init(vec, size)` - Set a desired initial capacity (optional)
+- `vector_init(vec, count)` - Set a desired initial capacity (optional)
 - `vector_push(vec, value)` - Append element (O(1) amortized)
 - `vector_pop(vec)` - Remove and return last element
 - `vector_get(vec, idx)` / `vector_set(vec, idx, value)` - Random access
 - `vector_insert(vec, idx, value)` / `vector_delete(vec, idx)` - Insert/remove at index
-- `vector_grow(vec, desired_size)` - Increase capacity of vector, but cannot shrink
+- `vector_grow(vec, count)` - Increase capacity of vector, but cannot shrink
 - `vector_duplicate(vec_dest, vec_src)` - Copy src to dest (dest must be uninitialized) 
 - `vector_clear(vec)` - Remove all elements
 - `vector_free(vec)` - Deallocate memory

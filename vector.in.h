@@ -21,7 +21,7 @@
  * This library follows a 2x capacity growing policy.
  *
  * Vector is optimized for iteration, here is an example:
- * for (int *i = v.begin; i != v.end; i++)
+ * for (int *i = v.begin; i < v.end; i++)
  *
  * To configure this library #define the symbols before including the library.
  * This is usually done in the header file where VECTOR_DECLARE() is called.
@@ -64,17 +64,19 @@
  *   Macro that returns the total capacity allocated in element count as a
  *   size_t.
  *
- * void vector_init(Vector *vec, size_t capacity)
- *   Initialize empty vector. Leaks memory if initializes an already initialized
- *   vector. Panics on unsigned integer overflow with capacity.
+ * void vector_init(Vector *vec, size_t element_count)
+ *   Initialize empty vector. Optional if the vector's memory is already zero-ed
+ *   out. Leaks memory if initializes an already initialized vector. Panics if
+ *   element_count multiplied by the size of vector's type would cause an
+ *   unsigned integer overflow.
  *
  * void vector_free(Vector *vec)
  *   Deallocate vector memory. Safe to call on already-freed vectors.
  *
- * void vector_grow(Vector *vec, size_t desired)
- *   Increase capacity to desired element count. Panics if shrinking attempted.
- *   Panics on unsigned integer overflow of desired multiplied by the size of
- *   vector type's size.
+ * void vector_grow(Vector *vec, size_t element_count)
+ *   Increase capacity to element_count. Panics if shrinking attempted. Panics
+ *   if element_count multiplied by the size of vector type's would cause an
+ *   unsigned integer overflow.
  *
  * void vector_push(Vector *vec, SampleType value)
  *   Append element, growing capacity if needed. Auto-initializes empty vectors.
@@ -128,7 +130,7 @@
  *
  *     vector_insert(&numbers, 2, 25);
  *
- *     for (ptr = numbers.begin; ptr != numbers.end; ptr++) {
+ *     for (ptr = numbers.begin; ptr < numbers.end; ptr++) {
  *     }
  *
  *     popped_element = vector_pop(&numbers);
@@ -216,9 +218,9 @@ typedef struct Vector {
 
 VECTOR_NORETURN void vector_panic(const char *message);
 void vector_assert(const Vector *vec);
-void vector_grow(Vector *vec, size_t desired);
+void vector_grow(Vector *vec, size_t element_count);
 void vector_free(Vector *vec);
-void vector_init(Vector *vec, size_t capacity);
+void vector_init(Vector *vec, size_t element_count);
 void vector_push(Vector *vec, SampleType value);
 SampleType vector_pop(Vector *vec);
 SampleType vector_get(const Vector *vec, size_t idx);
@@ -261,7 +263,7 @@ VECTOR_INLINE void vector_assert(const struct Vector *vec)
 	assert(vec->begin <= vec->end && vec->end <= vec->end_of_storage);
 }
 
-void vector_grow(struct Vector *vec, size_t desired)
+void vector_grow(struct Vector *vec, size_t element_count)
 {
 	size_t old_size = 0;
 	SampleType *new_begin = NULL;
@@ -275,7 +277,8 @@ void vector_grow(struct Vector *vec, size_t desired)
 	}
 	vector_assert(vec);
 
-	if (desired != 0 && sizeof(SampleType) > ((size_t)-1) / desired) {
+	if (element_count != 0
+	    && sizeof(SampleType) > ((size_t)-1) / element_count) {
 		if (VECTOR_NO_PANIC_ON_OVERFLOW) {
 			return;
 		}
@@ -283,24 +286,25 @@ void vector_grow(struct Vector *vec, size_t desired)
 	}
 
 	if (vec->begin) {
-		if (VECTOR_CAPACITY(vec) == desired) {
+		if (VECTOR_CAPACITY(vec) == element_count) {
 			return;
 		}
-		if (VECTOR_CAPACITY(vec) > desired) {
+		if (VECTOR_CAPACITY(vec) > element_count) {
 			vector_panic("Vector shrinking not supported.");
 		}
 	}
 
 	old_size = VECTOR_SIZE(vec);
 
-	new_begin = VECTOR_REALLOC(vec->begin, desired * sizeof(SampleType));
+	new_begin = VECTOR_REALLOC(vec->begin, element_count
+				   * sizeof(SampleType));
 	if (new_begin == NULL) {
 		vector_panic("Out of memory. Panic.");
 	}
 
 	vec->begin = new_begin;
 	vec->end = new_begin + old_size;
-	vec->end_of_storage = new_begin + desired;
+	vec->end_of_storage = new_begin + element_count;
 }
 
 void vector_free(struct Vector *vec)
@@ -321,7 +325,7 @@ void vector_free(struct Vector *vec)
 	vec->end_of_storage = NULL;
 }
 
-void vector_init(struct Vector *vec, size_t capacity)
+void vector_init(struct Vector *vec, size_t element_count)
 {
 	if (vec == NULL) {
 		if (VECTOR_NO_PANIC_ON_NULL) {
@@ -331,24 +335,24 @@ void vector_init(struct Vector *vec, size_t capacity)
 			"Null passed to vector_init but non-null argument expected.");
 	}
 
-	if (capacity == 0) {
+	if (element_count == 0) {
 		return;
 	}
 
-	if (sizeof(SampleType) > ((size_t)-1) / capacity) {
+	if (sizeof(SampleType) > ((size_t)-1) / element_count) {
 		if (VECTOR_NO_PANIC_ON_OVERFLOW) {
 			return;
 		}
-		vector_panic("Requested capacity would cause size overflow.");
+		vector_panic("Requested element_count would cause size overflow.");
 	}
 
-	vec->begin = VECTOR_REALLOC(NULL, capacity * sizeof(SampleType));
+	vec->begin = VECTOR_REALLOC(NULL, element_count * sizeof(SampleType));
 	if (vec->begin == NULL) {
 		vector_panic("Out of memory. Panic.");
 	}
 
 	vec->end = vec->begin;
-	vec->end_of_storage = vec->begin + capacity;
+	vec->end_of_storage = vec->begin + element_count;
 
 	vector_assert(vec);
 }
