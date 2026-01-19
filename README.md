@@ -77,6 +77,7 @@ VECTOR_DEFINE(MyVector, my_vector, float)
 - `vector_get(vec, idx)` / `vector_set(vec, idx, value)` - Random access
 - `vector_insert(vec, idx, value)` / `vector_delete(vec, idx)` - Insert/remove at index
 - `vector_grow(vec, count)` - Increase capacity of vector, but cannot shrink
+- `vector_resize(vec, count)` - Increase size of vector, can shrink
 - `vector_duplicate(vec_dest, vec_src)` - Copy src to dest (dest must be uninitialized) 
 - `vector_clear(vec)` - Remove all elements
 - `vector_free(vec)` - Deallocate memory

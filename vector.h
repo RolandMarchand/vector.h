@@ -78,6 +78,11 @@
  *   if element_count multiplied by the size of vector type's would cause an
  *   unsigned integer overflow.
  *
+ * void vector_resize(Vector *vec, size_t element_count)
+ *   Increase size to element_count leaving new items uninitialized. Is able to
+ *   shrink. Panics if element_count multiplied by the size of vector's type
+ *   would cause an unsigned integer overflow.
+ *
  * void vector_push(Vector *vec, SampleType value)
  *   Append element, growing capacity if needed. Auto-initializes empty vectors.
  *   O(1) amortized complexity.
@@ -218,6 +223,7 @@ typedef struct Struct_Name_ {\
 VECTOR_NORETURN void Functions_Prefix_##_panic(const char *message);\
 void Functions_Prefix_##_assert(const Struct_Name_ *vec);\
 void Functions_Prefix_##_grow(Struct_Name_ *vec, size_t element_count);\
+void Functions_Prefix_##_resize(Struct_Name_ *vec, size_t element_count);\
 void Functions_Prefix_##_free(Struct_Name_ *vec);\
 void Functions_Prefix_##_init(Struct_Name_ *vec, size_t element_count);\
 void Functions_Prefix_##_push(Struct_Name_ *vec, Custom_Type_ value);\
@@ -303,6 +309,36 @@ void Functions_Prefix_##_grow(struct Struct_Name_ *vec, size_t element_count)\
 	vec->begin = new_begin;\
 	vec->end = new_begin + old_size;\
 	vec->end_of_storage = new_begin + element_count;\
+}\
+\
+void Functions_Prefix_##_resize(Struct_Name_ *vec, size_t element_count)\
+{\
+	if (vec == NULL) {\
+		if (VECTOR_NO_PANIC_ON_NULL) {\
+			return;\
+		}\
+		Functions_Prefix_##_panic(\
+			"Null passed to "#Functions_Prefix_"_resize but non-null argument expected.");\
+	}\
+	Functions_Prefix_##_assert(vec);\
+\
+	if (element_count != 0\
+		&& sizeof(Custom_Type_) > ((size_t)-1) / element_count) {\
+		if (VECTOR_NO_PANIC_ON_OVERFLOW) {\
+			return;\
+		}\
+		Functions_Prefix_##_panic("Requested capacity would cause size overflow.");\
+	}\
+\
+	if (vec->begin == NULL) {\
+		Functions_Prefix_##_init(vec, element_count);\
+	}\
+\
+	if (element_count > VECTOR_CAPACITY(vec)) {\
+		Functions_Prefix_##_grow(vec, element_count);\
+	}\
+\
+	vec->end = vec->begin + element_count;\
 }\
 \
 void Functions_Prefix_##_free(struct Struct_Name_ *vec)\
