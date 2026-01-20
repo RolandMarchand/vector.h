@@ -64,12 +64,57 @@ void test_grow(void)
 	int idx = 0;
 	vector_init(&vec, 10);
 
-	vec.end += 3; /* Dummy elements */
+	vector_resize(&vec, 3); /* dummy elements */
 
 	for (idx = 11; idx < 1000; idx++) {
 		vector_grow(&vec, idx);
 		TEST_ASSERT_EQUAL_UINT(idx, VECTOR_CAPACITY(&vec));
 		TEST_ASSERT_EQUAL_UINT(3, VECTOR_SIZE(&vec));
+	}
+
+	vector_free(&vec);
+}
+
+void test_resize_from_zero(void)
+{
+	Vector vec = { 0 };
+
+	vector_resize(&vec, 5);
+
+	TEST_ASSERT_EQUAL_UINT(5, VECTOR_CAPACITY(&vec));
+	TEST_ASSERT_EQUAL_UINT(5, VECTOR_SIZE(&vec));
+	TEST_ASSERT(vec.begin + 5 == vec.end);
+	TEST_ASSERT_NOT_NULL(vec.begin);
+	TEST_ASSERT_NOT_NULL(vec.end);
+	TEST_ASSERT_NOT_NULL(vec.end_of_storage);
+
+	vector_free(&vec);
+}
+
+void test_resize_0(void)
+{
+	Vector vec = { 0 };
+	Vector vec_copy = { 0 };
+
+	vector_init(&vec, 10);
+	memcpy(&vec_copy, &vec, sizeof(Vector));
+
+	vector_resize(&vec, 10);
+
+	TEST_ASSERT_EQUAL_UINT(10, VECTOR_SIZE(&vec));
+
+	vector_free(&vec);
+}
+
+void test_resize(void)
+{
+	Vector vec = { 0 };
+	int idx = 0;
+	vector_init(&vec, 10);
+
+	for (idx = 1; idx < 1000; idx++) {
+		vector_resize(&vec, idx);
+		TEST_ASSERT_EQUAL_UINT(idx, VECTOR_SIZE(&vec));
 	}
 
 	vector_free(&vec);
@@ -685,6 +730,9 @@ int main(void)
 	RUN_TEST(test_grow_from_zero);
 	RUN_TEST(test_grow_0);
 	RUN_TEST(test_grow);
+	RUN_TEST(test_resize_from_zero);
+	RUN_TEST(test_resize_0);
+	RUN_TEST(test_resize);
 	RUN_TEST(test_free);
 	RUN_TEST(test_free_zero);
 	RUN_TEST(test_init_zero);

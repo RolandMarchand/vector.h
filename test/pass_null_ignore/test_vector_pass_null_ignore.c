@@ -13,7 +13,12 @@ void tearDown(void)
 
 void test_grow_pass_null_ignore(void)
 {
-	vector_grow(NULL, 0);
+	vector_grow(NULL, 1);
+}
+
+void test_resize_pass_null_ignore(void)
+{
+	vector_resize(NULL, 1);
 }
 
 void test_free_pass_null_ignore(void)
@@ -23,7 +28,7 @@ void test_free_pass_null_ignore(void)
 
 void test_init_pass_null_ignore(void)
 {
-	vector_init(NULL, 0);
+	vector_init(NULL, 1);
 }
 
 void test_push_pass_null_ignore(void)
@@ -83,6 +88,7 @@ int main(void)
 	UNITY_BEGIN();
 
 	RUN_TEST(test_grow_pass_null_ignore);
+	RUN_TEST(test_resize_pass_null_ignore);
 	RUN_TEST(test_free_pass_null_ignore);
 	RUN_TEST(test_init_pass_null_ignore);
 	RUN_TEST(test_push_pass_null_ignore);

@@ -31,6 +31,19 @@ void test_grow_out_of_mem(void)
 	TEST_FAIL();
 }
 
+void test_resize_out_of_mem(void)
+{
+	Vector vec = { 0 };
+
+	if (setjmp(abort_jmp) == 0) {
+		vector_resize(&vec, 10);
+	} else {
+		return;
+	}
+
+	TEST_FAIL();
+}
+
 void test_init_out_of_mem(void)
 {
 	Vector vec = { 0 };
@@ -69,6 +82,7 @@ int main(void)
 	UNITY_BEGIN();
 
 	RUN_TEST(test_grow_out_of_mem);
+	RUN_TEST(test_resize_out_of_mem);
 	RUN_TEST(test_init_out_of_mem);
 	RUN_TEST(test_duplicate_out_of_mem);
 
